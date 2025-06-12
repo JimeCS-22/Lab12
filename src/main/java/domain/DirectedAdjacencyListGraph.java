@@ -6,7 +6,7 @@ import domain.queue.QueueException;
 import domain.stack.LinkedStack;
 import domain.stack.StackException;
 
-public class AdjacencyListGraph implements Graph {
+public class DirectedAdjacencyListGraph implements Graph {
     private Vertex[] vertexList; //arreglo de objetos tupo vértice
     private int n; //max de elementos
     private int counter; //contador de vertices
@@ -16,7 +16,7 @@ public class AdjacencyListGraph implements Graph {
     private LinkedQueue queue;
 
     //Constructor
-    public AdjacencyListGraph(int n) {
+    public DirectedAdjacencyListGraph(int n) {
         if (n <= 0) System.exit(1); //sale con status==1 (error)
         this.n = n;
         this.counter = 0;
@@ -44,7 +44,7 @@ public class AdjacencyListGraph implements Graph {
     @Override
     public boolean containsVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency List Graph is Empty");
+            throw new GraphException("Directed Adjacency List Graph is Empty");
         //opcion-1
        /* for (int i = 0; i < counter; i++) {
             if(util.Utility.compare(vertexList[i].data, element)==0)
@@ -58,7 +58,7 @@ public class AdjacencyListGraph implements Graph {
     @Override
     public boolean containsEdge(Object a, Object b) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency List Graph is Empty");
+            throw new GraphException("Directed Adjacency List Graph is Empty");
         return !vertexList[indexOf(a)].edgesList.isEmpty()
                 && vertexList[indexOf(a)].edgesList.contains(new EdgeWeight(b, null));
     }
@@ -66,7 +66,7 @@ public class AdjacencyListGraph implements Graph {
     @Override
     public void addVertex(Object element) throws GraphException, ListException {
         if(counter>=vertexList.length)
-            throw new GraphException("Adjacency List Graph is Full");
+            throw new GraphException("Directed Adjacency List Graph is Full");
         vertexList[counter++] = new Vertex(element);
     }
 
@@ -75,8 +75,7 @@ public class AdjacencyListGraph implements Graph {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
         vertexList[indexOf(a)].edgesList.add(new EdgeWeight(b, null));
-        //grafo no dirigido
-        vertexList[indexOf(b)].edgesList.add(new EdgeWeight(a, null));
+
 
     }
 
@@ -93,8 +92,7 @@ public class AdjacencyListGraph implements Graph {
         if(!containsEdge(a, b))
             throw new GraphException("There is no edge between the vertexes["+a+"] y ["+b+"]");
         updateEdgesListEdgeWeight(a, b, weight);
-        //GRAFO NO DIRIGIDO
-        updateEdgesListEdgeWeight(b, a, weight);
+
     }
 
     private void updateEdgesListEdgeWeight(Object a, Object b, Object weight) throws ListException {
@@ -113,15 +111,14 @@ public class AdjacencyListGraph implements Graph {
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
         if(!containsEdge(a, b)){ //si no existe la arista
             vertexList[indexOf(a)].edgesList.add(new EdgeWeight(b, weight));
-            //grafo no dirigido
-            vertexList[indexOf(b)].edgesList.add(new EdgeWeight(a, weight));
+
         }
     }
 
     @Override
     public void removeVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency List Graph is Empty");
+            throw new GraphException("Directed Adjacency List Graph is Empty");
         if(containsVertex(element)){
             for (int i = 0; i < counter; i++) {
                 if(util.Utility.compare(vertexList[i].data, element)==0) {
@@ -150,10 +147,7 @@ public class AdjacencyListGraph implements Graph {
         if(!vertexList[indexOf(a)].edgesList.isEmpty()) {
             vertexList[indexOf(a)].edgesList.remove(new EdgeWeight(b, null));
         }
-        //grafo no dirigido
-        if(!vertexList[indexOf(b)].edgesList.isEmpty()){
-            vertexList[indexOf(b)].edgesList.remove(new EdgeWeight(a, null));
-        }
+
     }
 
     // Recorrido en profundidad
@@ -211,19 +205,27 @@ public class AdjacencyListGraph implements Graph {
     }
 
     private int adjacentVertexNotVisited(int index) throws ListException {
-        Object vertexData = vertexList[index].data;
-        for (int i = 0; i < counter; i++) {
-            if(!vertexList[index].edgesList.isEmpty()
-                    && vertexList[i].edgesList.contains(new EdgeWeight(vertexData, null))
-                    && !vertexList[i].isVisited())
-                return i;//retorna la posicion del vertice adyacente no visitado
-        }//for i
+        if (vertexList[index].edgesList.isEmpty()) {
+            return -1;
+        }
+
+        for (int i = 0; i < vertexList[index].edgesList.size(); i++) {
+            EdgeWeight edge = (EdgeWeight) vertexList[index].edgesList.get(i);
+            Object adjacentData = edge.getEdge();
+            int adjacentIndex = indexOf(adjacentData);
+
+            if (adjacentIndex != -1 && !vertexList[adjacentIndex].isVisited()) {
+                return adjacentIndex;
+            }
+        }
         return -1;
     }
 
+
+
     @Override
     public String toString() {
-        String result = "Adjacency List Graph Content...";
+        String result = "Directed Adjacency List Graph Content...";
         //se muestran todos los vértices del grafo
         for (int i = 0; i < counter; i++) {
             result+="\nThe vextex in the position: "+i+" is: "+vertexList[i].data;
