@@ -7,7 +7,7 @@ import domain.queue.QueueException;
 import domain.stack.LinkedStack;
 import domain.stack.StackException;
 
-public class SinglyLinkedListGraph implements Graph {
+public class DirectedSinglyLinkedListGraph implements Graph {
     private SinglyLinkedList vertexList; //lista enlazada de vértices
 
     //para los recorridos dfs, bfs
@@ -15,7 +15,7 @@ public class SinglyLinkedListGraph implements Graph {
     private LinkedQueue queue;
 
     //Constructor
-    public SinglyLinkedListGraph() {
+    public DirectedSinglyLinkedListGraph() {
         this.vertexList = new SinglyLinkedList();
         this.stack = new LinkedStack();
         this.queue = new LinkedQueue();
@@ -39,14 +39,14 @@ public class SinglyLinkedListGraph implements Graph {
     @Override
     public boolean containsVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Singly Linked List Graph is Empty");
+            throw new GraphException("Directed  Linked List Graph is Empty");
         return indexOf(element)!=-1;
     }
 
     @Override
     public boolean containsEdge(Object a, Object b) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Singly Linked List Graph is Empty");
+            throw new GraphException("Directed  Linked List Graph is Empty");
         int index = indexOf(a); //buscamos el índice del elemento en la lista enlazada
         if(index ==-1) return false;
         Vertex vertex = (Vertex) vertexList.getNode(index).data;
@@ -67,8 +67,7 @@ public class SinglyLinkedListGraph implements Graph {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
         addRemoveVertexEdgeWeight(a, b, null, "addEdge"); //agrego la arista
-        //grafo no dirigido
-        addRemoveVertexEdgeWeight(b, a, null, "addEdge"); //agrego la arista
+
 
     }
 
@@ -87,8 +86,7 @@ public class SinglyLinkedListGraph implements Graph {
         if (!containsEdge(a, b))
             throw new GraphException("There is no edge between the vertexes[" + a + "] y [" + b + "]");
         addRemoveVertexEdgeWeight(a, b, weight, "addWeight"); //agrego la arista
-        //grafo no dirigido
-        addRemoveVertexEdgeWeight(b, a, weight, "addWeight"); //agrego la arista
+
     }
 
     @Override
@@ -97,15 +95,14 @@ public class SinglyLinkedListGraph implements Graph {
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
         if(!containsEdge(a, b)) {
             addRemoveVertexEdgeWeight(a, b, weight, "addEdge"); //agrego la arista
-            //grafo no dirigido
-            addRemoveVertexEdgeWeight(b, a, weight, "addEdge"); //agrego la arista
+
         }
     }
 
     @Override
     public void removeVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Singly Linked List Graph is Empty");
+            throw new GraphException("Directed  Linked List Graph is Empty");
         boolean removed = false;
         if(!vertexList.isEmpty() && containsVertex(element)){
             for (int i = 1; !removed&&i <= vertexList.size(); i++) {
@@ -131,8 +128,7 @@ public class SinglyLinkedListGraph implements Graph {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("There's no some of the vertexes");
         addRemoveVertexEdgeWeight(a, b, null, "remove"); //suprimo la arista
-        //grafo no dirigido
-        addRemoveVertexEdgeWeight(b, a, null, "remove"); //suprimo la arista
+
     }
 
     private void addRemoveVertexEdgeWeight(Object a, Object b, Object weight, String action) throws ListException{
@@ -228,7 +224,7 @@ public class SinglyLinkedListGraph implements Graph {
 
     @Override
     public String toString() {
-        String result = "Singly Linked List Graph Content...";
+        String result = "Directed  Linked List Graph Content...";
         try {
             for(int i=1; i<=vertexList.size(); i++){
                 Vertex vertex = (Vertex)vertexList.getNode(i).data;

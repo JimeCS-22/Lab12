@@ -249,7 +249,7 @@ public class SinglyLinkedList implements List{
         if(isEmpty()){
             throw new ListException("Singly Linked List is Empty");
         }
-        if (index < 0 || index > size()) { // <<-- AQUI DEBE SER index < 0 || index >= size()
+        if (index < 0 || index > size()) {
             throw new ListException("Invalid index: " + index);
         }
 
