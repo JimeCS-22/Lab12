@@ -1,25 +1,13 @@
 package Controller;
 
-import domain.AdjacencyMatrixGraph;
-import domain.GraphException;
-import domain.list.ListException;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TextArea;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Line;
-import javafx.scene.text.Font;
-import javafx.scene.text.Text;
 
-import java.util.*;
-
-public class AdjancencyMatrixGraphController {
+public class DirectedGraphController {
     @FXML
     private TextArea TextResult;
     @FXML
@@ -30,6 +18,12 @@ public class AdjancencyMatrixGraphController {
     private Pane pane3;
     @FXML
     private AnchorPane AP;
+    @FXML
+    private RadioButton AdjacencyList;
+    @FXML
+    private RadioButton AdjacencyMatrix;
+    @FXML
+    private RadioButton LinkedList;
 
     @FXML
     public void ContainsEdgeOnAction(ActionEvent actionEvent) {
@@ -57,6 +51,18 @@ public class AdjancencyMatrixGraphController {
 
     @FXML
     public void containsVertexOnAction(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void AdjacencyListOnAction(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void adjacencyMatrizOnAction(ActionEvent actionEvent) {
+    }
+
+    @FXML
+    public void LinkedListOnAction(ActionEvent actionEvent) {
     }
 //    @FXML
 //    private Pane mainPain;
