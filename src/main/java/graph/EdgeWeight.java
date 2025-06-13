@@ -1,17 +1,17 @@
-package domain;
+package graph;
 
 import java.util.Objects;
+import java.lang.Comparable;
 
-public class EdgeWeight {
+public class EdgeWeight implements Comparable<EdgeWeight> {
 
-    private Object edge; //arista
-    private Object weight; //peso
+    private Object edge;
+    private Object weight;
 
     public EdgeWeight(Object edge, Object weight) {
         this.edge = edge;
         this.weight = weight;
     }
-
 
     public Object getEdge() {
         return edge;
@@ -37,19 +37,26 @@ public class EdgeWeight {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         EdgeWeight that = (EdgeWeight) o;
-        return Objects.equals(edge, that.edge) && Objects.equals(weight, that.weight);
+        return Objects.equals(edge, that.edge);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(edge, weight);
+        return Objects.hash(edge);
     }
 
-
+    @Override
     public int compareTo(EdgeWeight other) {
-        // Asumiendo que el peso es siempre un Integer
-        return Integer.compare((Integer) this.weight, (Integer) other.weight);
+        if (this.weight instanceof Integer && other.weight instanceof Integer) {
+            return Integer.compare((Integer) this.weight, (Integer) other.weight);
+        }
+        if (this.weight == null && other.weight == null) return 0;
+        if (this.weight == null) return -1;
+        if (other.weight == null) return 1;
+
+        throw new IllegalArgumentException("EdgeWeight comparison expects Integer weights. Found non-Integer or mixed types.");
     }
 }

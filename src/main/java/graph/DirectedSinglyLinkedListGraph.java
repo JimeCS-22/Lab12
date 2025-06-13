@@ -1,4 +1,4 @@
-package domain;
+package graph;
 
 import domain.list.ListException;
 import domain.list.Node; // Ensure Node is imported, assuming it's the generic Node

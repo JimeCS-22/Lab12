@@ -2,25 +2,22 @@ package domain.list;
 
 public class SinglyLinkedList implements List {
     private Node first; //apuntador al inicio de la lista
+    private int count;
 
     public SinglyLinkedList() {
         this.first = null; //la lista no existe
+        this.count = 0;
     }
 
     @Override
     public int size() {
-        Node aux = first;
-        int count = 0;
-        while (aux != null) {
-            count++;
-            aux = aux.next; //lo movemos al sgte nodo
-        }
         return count;
     }
 
     @Override
     public void clear() {
         this.first = null; //anulamos la lista
+        this.count = 0;
     }
 
     @Override
@@ -59,6 +56,7 @@ public class SinglyLinkedList implements List {
             //con el nuevo nodo
             aux.next = newNode;
         }
+        this.count++;
     }
 
     @Override
@@ -70,6 +68,7 @@ public class SinglyLinkedList implements List {
             newNode.next = first;
             first = newNode;
         }
+        this.count++;
     }
 
     @Override
@@ -89,6 +88,7 @@ public class SinglyLinkedList implements List {
         //Caso 1. El elemento a suprimir esta al inicio
         if (util.Utility.compare(first.data, element) == 0) {
             first = first.next; //saltamos el primer nodo
+            this.count--;
         } else {  //Caso 2. El elemento a suprimir puede estar al medio o final
             Node prev = first; //dejo un apuntador al nodo anterior
             Node aux = first.next;
@@ -101,8 +101,9 @@ public class SinglyLinkedList implements List {
             if (aux != null && util.Utility.compare(aux.data, element) == 0) {
                 //ya lo encontro, procedo a desenlazar el nodo
                 prev.next = aux.next;
+                this.count--;
+            } else {
             }
-
         }
     }
 
@@ -113,6 +114,7 @@ public class SinglyLinkedList implements List {
         }
         Object removedData = first.data;
         first = first.next;
+        this.count--;
         return removedData;
     }
 
@@ -121,9 +123,10 @@ public class SinglyLinkedList implements List {
         if (isEmpty()) {
             throw new ListException("Singly Linked List is Empty");
         }
-        if (first.next == null) { // Only one element in the list
+        if (first.next == null) {
             Object removedData = first.data;
             first = null;
+            this.count--;
             return removedData;
         }
         Node aux = first;
@@ -132,6 +135,7 @@ public class SinglyLinkedList implements List {
         }
         Object removedData = aux.next.data;
         aux.next = null;
+        this.count--;
         return removedData;
     }
 
@@ -140,9 +144,9 @@ public class SinglyLinkedList implements List {
         if (isEmpty()) {
             throw new ListException("Singly Linked List is Empty");
         }
+
         for (int i = 0; i < size() - 1; i++) {
             for (int j = i + 1; j < size(); j++) {
-                // Ensure getNode(index) returns a valid Node
                 if (util.Utility.compare(getNode(j).data, getNode(i).data) < 0) {
                     Object aux = getNode(i).data;
                     getNode(i).data = getNode(j).data;
@@ -158,15 +162,15 @@ public class SinglyLinkedList implements List {
             throw new ListException("Singly Linked List is Empty");
         }
         Node aux = first;
-        int index = 0; // Correct: List is 0-indexed
+        int index = 0;
         while (aux != null) {
             if (util.Utility.compare(aux.data, element) == 0) {
                 return index;
             }
             index++;
-            aux = aux.next; //muevo aux al sgte nodo
+            aux = aux.next;
         }
-        return -1; //indica q el elemento no existe
+        return -1;
     }
 
     @Override
@@ -183,11 +187,9 @@ public class SinglyLinkedList implements List {
             throw new ListException("Singly Linked List is Empty");
         }
         Node aux = first;
-        //mientras no llegue al ult nodo
         while (aux.next != null) {
             aux = aux.next;
         }
-        //se sale del while cuando aux está en el ult nodo
         return aux.data;
     }
 
@@ -200,10 +202,9 @@ public class SinglyLinkedList implements List {
             return "It's the first, it has no previous";
         }
         Node aux = first;
-        //mientras no llegue al ult nodo (o el siguiente sea nulo)
         while (aux.next != null) {
             if (util.Utility.compare(aux.next.data, element) == 0) {
-                return aux.data; //retornamos la data del nodo actual
+                return aux.data;
             }
             aux = aux.next;
         }
@@ -230,7 +231,8 @@ public class SinglyLinkedList implements List {
         if (isEmpty()) {
             throw new ListException("Singly Linked List is Empty");
         }
-        if (index < 0 || index >= size()) {
+        // Aquí debes usar 'count' para el límite, no llamar a size() que itera.
+        if (index < 0 || index >= count) {
             throw new ListException("Invalid index: " + index);
         }
         Node aux = first;
@@ -239,8 +241,8 @@ public class SinglyLinkedList implements List {
             if (i == index) {
                 return aux;
             }
-            i++; //incremento la var local
-            aux = aux.next; //muevo aux al sgte nodo
+            i++;
+            aux = aux.next;
         }
         return null;
     }
@@ -251,12 +253,12 @@ public class SinglyLinkedList implements List {
         }
         Node aux = first;
         while (aux != null) {
-            if (util.Utility.compare(aux.data, element) == 0) {  //ya encontro el elemento
+            if (util.Utility.compare(aux.data, element) == 0) {
                 return aux;
             }
-            aux = aux.next; //muevo aux al sgte nodo
+            aux = aux.next;
         }
-        return null; //si llega aqui es xq no encontro el index
+        return null;
     }
 
     @Override
@@ -277,7 +279,8 @@ public class SinglyLinkedList implements List {
         if (isEmpty()) {
             throw new ListException("Singly Linked List is Empty");
         }
-        if (index < 0 || index >= size()) {
+        // Aquí también usar 'count'
+        if (index < 0 || index >= count) { // Usar 'count' directamente
             throw new ListException("Invalid index: " + index);
         }
 

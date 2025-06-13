@@ -3,9 +3,9 @@ package domain;
 import domain.list.ListException;
 import domain.queue.QueueException;
 import domain.stack.StackException;
+import graph.DirectedAdjacencyMatrixGraph;
+import graph.GraphException;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class DirectedAdjacencyMatrixGraphTest {
 

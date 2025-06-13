@@ -1,4 +1,4 @@
-package domain;
+package graph;
 
 import domain.list.ListException;
 import domain.queue.LinkedQueue;
@@ -6,10 +6,8 @@ import domain.queue.QueueException;
 import domain.stack.LinkedStack;
 import domain.stack.StackException;
 
-public class AdjacencyMatrixGraph implements Graph {
-
-    public Vertex[] vertexList; //arreglo de objetos tupo vértice
-    private Object[][] adjacencyMatrix; //arreglo bidimensional
+public class DirectedAdjacencyListGraph implements Graph {
+    private Vertex[] vertexList; //arreglo de objetos tupo vértice
     private int n; //max de elementos
     private int counter; //contador de vertices
 
@@ -18,22 +16,13 @@ public class AdjacencyMatrixGraph implements Graph {
     private LinkedQueue queue;
 
     //Constructor
-    public AdjacencyMatrixGraph(int n) {
+    public DirectedAdjacencyListGraph(int n) {
         if (n <= 0) System.exit(1); //sale con status==1 (error)
         this.n = n;
         this.counter = 0;
         this.vertexList = new Vertex[n];
-        this.adjacencyMatrix = new Object[n][n];
         this.stack = new LinkedStack();
         this.queue = new LinkedQueue();
-        initMatrix(); //inicializa matriz de objetos con cero
-    }
-
-    private void initMatrix() {
-
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                this.adjacencyMatrix[i][j] = 0; //init con ceros
     }
 
     @Override
@@ -44,9 +33,7 @@ public class AdjacencyMatrixGraph implements Graph {
     @Override
     public void clear() {
         this.vertexList = new Vertex[n];
-        this.adjacencyMatrix = new Object[n][n];
         this.counter = 0; //inicializo contador de vértices
-        this.initMatrix();
     }
 
     @Override
@@ -57,7 +44,7 @@ public class AdjacencyMatrixGraph implements Graph {
     @Override
     public boolean containsVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency Matrix Graph is Empty");
+            throw new GraphException("Directed Adjacency List Graph is Empty");
         //opcion-1
        /* for (int i = 0; i < counter; i++) {
             if(util.Utility.compare(vertexList[i].data, element)==0)
@@ -71,14 +58,15 @@ public class AdjacencyMatrixGraph implements Graph {
     @Override
     public boolean containsEdge(Object a, Object b) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency Matrix Graph is Empty");
-        return !(util.Utility.compare(adjacencyMatrix[indexOf(a)][indexOf(b)], 0)==0);
+            throw new GraphException("Directed Adjacency List Graph is Empty");
+        return !vertexList[indexOf(a)].edgesList.isEmpty()
+                && vertexList[indexOf(a)].edgesList.contains(new EdgeWeight(b, null));
     }
 
     @Override
     public void addVertex(Object element) throws GraphException, ListException {
         if(counter>=vertexList.length)
-            throw new GraphException("Adjacency Matrix Graph is Full");
+            throw new GraphException("Directed Adjacency List Graph is Full");
         vertexList[counter++] = new Vertex(element);
     }
 
@@ -86,9 +74,8 @@ public class AdjacencyMatrixGraph implements Graph {
     public void addEdge(Object a, Object b) throws GraphException, ListException {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
-        adjacencyMatrix[indexOf(a)][indexOf(b)] = 1; //hay una arista
-        //grafo no dirigido
-        adjacencyMatrix[indexOf(b)][indexOf(a)] = 1; //hay una arista
+        vertexList[indexOf(a)].edgesList.add(new EdgeWeight(b, null));
+
 
     }
 
@@ -104,56 +91,63 @@ public class AdjacencyMatrixGraph implements Graph {
     public void addWeight(Object a, Object b, Object weight) throws GraphException, ListException {
         if(!containsEdge(a, b))
             throw new GraphException("There is no edge between the vertexes["+a+"] y ["+b+"]");
-        adjacencyMatrix[indexOf(a)][indexOf(b)] = weight; //hay una arista
-        //grafo no dirigido
-        adjacencyMatrix[indexOf(b)][indexOf(a)] = weight; //hay una arista
+        updateEdgesListEdgeWeight(a, b, weight);
+
+    }
+
+    private void updateEdgesListEdgeWeight(Object a, Object b, Object weight) throws ListException {
+        EdgeWeight ew = (EdgeWeight) vertexList[indexOf(a)].edgesList
+                .getNode(new EdgeWeight(b, null)).getData();
+        //setteo el peso en el campo respectivo
+        ew.setWeight(weight);
+        //ahora actualizo la info en la lista de aristas correspondiente
+        vertexList[indexOf(a)].edgesList.getNode(new EdgeWeight(b, null))
+                .setData(ew);
     }
 
     @Override
     public void addEdgeWeight(Object a, Object b, Object weight) throws GraphException, ListException {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
-        adjacencyMatrix[indexOf(a)][indexOf(b)] = weight; //hay una arista
-        //grafo no dirigido
-        adjacencyMatrix[indexOf(b)][indexOf(a)] = weight; //hay una arista
+        if(!containsEdge(a, b)){ //si no existe la arista
+            vertexList[indexOf(a)].edgesList.add(new EdgeWeight(b, weight));
+
+        }
     }
 
     @Override
     public void removeVertex(Object element) throws GraphException, ListException {
         if(isEmpty())
-            throw new GraphException("Adjacency Matrix Graph is Empty");
-        int index = indexOf(element);
-        if(index!=-1){ //si existe el indice
-            for (int i = index; i < counter-1; i++) {
-                vertexList[i] = vertexList[i+1];
-                //elimino el vertice, tambien debo eliminar todas las aristas
-
-                //movemos todas las filas, una posición hacia arriba
-                for (int j = 0; j < counter; j++)
-                    adjacencyMatrix[i][j] = adjacencyMatrix[i+1][j];
-            }
-            //ahora, movemos todas las columnas, una posición a la izq
+            throw new GraphException("Directed Adjacency List Graph is Empty");
+        if(containsVertex(element)){
             for (int i = 0; i < counter; i++) {
-                for (int j = index; j < counter-1; j++) {
-                    adjacencyMatrix[i][j] = adjacencyMatrix[i][j+1];
+                if(util.Utility.compare(vertexList[i].data, element)==0) {
+                    //ya lo encontro, ahora
+                    //se debe suprimir el vertice a eliminar de todas las listas
+                    //enlazadas de los otros vértices
+                    for (int j = 0; j < counter; j++) {
+                        if(containsEdge(vertexList[j].data, element))
+                            removeEdge(vertexList[j].data, element);
+                    }
+
+                    //ahora, debemos suprimir el vértice
+                    for (int j = i; j < counter-1; j++) {
+                        vertexList[j] = vertexList[j+1];
+                    }
+                    counter--; //decrementamos el contador de vértices
                 }
             }
-            counter--; //decrementamos el contador de vertices agregados
         }
-        //que pasa, si ya no quedan vertices
-        if(counter==0) initMatrix();
     }
 
     @Override
     public void removeEdge(Object a, Object b) throws GraphException, ListException {
         if(!containsVertex(a)||!containsVertex(b))
             throw new GraphException("There's no some of the vertexes");
-        int i = indexOf(a);
-        int j = indexOf(b);
-        if(i!=-1 && j!=-1){
-            adjacencyMatrix[i][j] = 0;
-            adjacencyMatrix[j][i] = 0; //grafo no dirigido
+        if(!vertexList[indexOf(a)].edgesList.isEmpty()) {
+            vertexList[indexOf(a)].edgesList.remove(new EdgeWeight(b, null));
         }
+
     }
 
     // Recorrido en profundidad
@@ -210,57 +204,34 @@ public class AdjacencyMatrixGraph implements Graph {
         }//for
     }
 
-    private int adjacentVertexNotVisited(int index) {
-        for (int i = 0; i < counter; i++) {
-            if (!adjacencyMatrix[index][i].equals(0)
-                    && !vertexList[i].isVisited())
-                return i;//retorna la posicion del vertice adyacente no visitado
-        }//for i
+    private int adjacentVertexNotVisited(int index) throws ListException {
+        if (vertexList[index].edgesList.isEmpty()) {
+            return -1;
+        }
+
+        for (int i = 0; i < vertexList[index].edgesList.size(); i++) {
+            EdgeWeight edge = (EdgeWeight) vertexList[index].edgesList.get(i);
+            Object adjacentData = edge.getEdge();
+            int adjacentIndex = indexOf(adjacentData);
+
+            if (adjacentIndex != -1 && !vertexList[adjacentIndex].isVisited()) {
+                return adjacentIndex;
+            }
+        }
         return -1;
     }
 
+
+
     @Override
     public String toString() {
-        String result = "Adjacency Matrix Graph Content...";
+        String result = "Directed Adjacency List Graph Content...";
         //se muestran todos los vértices del grafo
         for (int i = 0; i < counter; i++) {
             result+="\nThe vextex in the position: "+i+" is: "+vertexList[i].data;
+            if(!vertexList[i].edgesList.isEmpty())
+                result+="\n......EDGES AND WEIGHTS: "+vertexList[i].edgesList.toString();
         }
-        //agregamos la info de las aristas y pesos
-        for (int i = 0; i < counter; i++) {
-            for (int j = 0; j < counter; j++) {
-                if(util.Utility.compare(adjacencyMatrix[i][j], 0)!=0) {//si existe arista
-                    //si existe una arista
-                    result+="\nThere is edge between the vertexes: "+vertexList[i].data+"...."
-                            +vertexList[j].data;
-                    //si existe peso que lo muestre
-                    if(util.Utility.compare(adjacencyMatrix[i][j], 1)!=0){
-                        //si matriz[fila][col] !=1 existe un peso agregado
-                        result+="_____WEIGHT: "+adjacencyMatrix[i][j];
-                    }
-                }
-            }
-        }
-
         return result;
     }
-
-
-    public Object getEdgeWeight(Object a, Object b) throws GraphException, ListException {
-        if(!containsEdge(a, b))
-            throw new GraphException("There is no edge between the vertexes[" + a + "] and [" + b + "].");
-        int indexA = indexOf(a);
-        int indexB = indexOf(b);
-        return adjacencyMatrix[indexA][indexB];
-    }
-
-    public Object getVertexData(int index) throws ListException {
-        if (index < 0 || index >= counter) {
-            throw new ListException("Vertex index out of bounds.");
-        }
-        return vertexList[index].data;
-    }
-
-
-
 }

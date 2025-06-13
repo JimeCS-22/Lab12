@@ -1,4 +1,4 @@
-package domain;
+package graph;
 
 public class GraphException extends Exception {
 

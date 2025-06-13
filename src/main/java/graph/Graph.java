@@ -1,4 +1,4 @@
-package domain;
+package graph;
 
 import domain.list.ListException;
 import domain.queue.QueueException;

@@ -1,6 +1,7 @@
 package util;
 
-import domain.EdgeWeight;
+import graph.EdgeWeight;
+import graph.Vertex;
 
 import java.text.DecimalFormat;
 import java.util.Random;
@@ -42,12 +43,14 @@ public class Utility {
                 return c1.compareTo(c2)<0 ? -1 : c1.compareTo(c2)>0 ? 1 : 0;
             case "EdgeWeight":
                 EdgeWeight ew1 = (EdgeWeight) a ; EdgeWeight ew2 = (EdgeWeight) b;
-                return compare(ew1.getEdge(), ew2.getEdge()); // Assuming getEdge() returns comparable object
+                // Asumiendo que getEdge() devuelve un objeto comparable (Integer, String, etc.)
+                return compare(ew1.getEdge(), ew2.getEdge());
             case "Vertex": // Add this case
-                // Assuming your Vertex class is 'domain.Vertex' and has a 'data' field
-                domain.Vertex v1 = (domain.Vertex) a;
-                domain.Vertex v2 = (domain.Vertex) b;
-                return compare(v1.getData(), v2.getData()); // Compare based on their internal data
+                // Asumiendo que tu clase Vertex es 'graph.Vertex' y tiene un campo 'data' directamente accesible
+                // Si 'data' es privado, necesitarías un getter como 'v1.getData()'
+                Vertex v1 = (Vertex) a;
+                Vertex v2 = (Vertex) b;
+                return compare(v1.data, v2.data); // Comparar basado en su 'data' interna
         }
         return 2; //Unknown or unhandled type comparison
     }
@@ -57,7 +60,7 @@ public class Utility {
         if(a instanceof String && b instanceof String) return "String";
         if(a instanceof Character && b instanceof Character) return "Character";
         if (a instanceof EdgeWeight && b instanceof EdgeWeight) return "EdgeWeight";
-        if (a instanceof domain.Vertex && b instanceof domain.Vertex) return "Vertex"; // Add this line
+        if (a instanceof Vertex && b instanceof Vertex) return "Vertex"; // Add this line
         return "Unknown";
     }
 
@@ -107,7 +110,4 @@ public class Utility {
         int randomIndex = random.nextInt(Alphabet.length);
         return Alphabet[randomIndex];
     }
-
-
-
 }
