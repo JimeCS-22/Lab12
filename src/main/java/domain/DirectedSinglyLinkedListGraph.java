@@ -1,6 +1,7 @@
 package domain;
 
 import domain.list.ListException;
+import domain.list.Node; // Ensure Node is imported, assuming it's the generic Node
 import domain.list.SinglyLinkedList;
 import domain.queue.LinkedQueue;
 import domain.queue.QueueException;
@@ -8,13 +9,13 @@ import domain.stack.LinkedStack;
 import domain.stack.StackException;
 
 public class DirectedSinglyLinkedListGraph implements Graph {
-    private SinglyLinkedList vertexList; //lista enlazada de vértices
+    private SinglyLinkedList vertexList; // lista enlazada de vértices
 
-    //para los recorridos dfs, bfs
+    // para los recorridos dfs, bfs
     private LinkedStack stack;
     private LinkedQueue queue;
 
-    //Constructor
+    // Constructor
     public DirectedSinglyLinkedListGraph() {
         this.vertexList = new SinglyLinkedList();
         this.stack = new LinkedStack();
@@ -38,206 +39,247 @@ public class DirectedSinglyLinkedListGraph implements Graph {
 
     @Override
     public boolean containsVertex(Object element) throws GraphException, ListException {
-        if(isEmpty())
-            throw new GraphException("Directed  Linked List Graph is Empty");
-        return indexOf(element)!=-1;
+        if (isEmpty())
+            throw new GraphException("Directed Linked List Graph is Empty");
+        return indexOf(element) != -1;
     }
 
     @Override
     public boolean containsEdge(Object a, Object b) throws GraphException, ListException {
-        if(isEmpty())
-            throw new GraphException("Directed  Linked List Graph is Empty");
-        int index = indexOf(a); //buscamos el índice del elemento en la lista enlazada
-        if(index ==-1) return false;
+        if (isEmpty())
+            throw new GraphException("Directed Linked List Graph is Empty");
+        int index = indexOf(a); // buscamos el índice del elemento en la lista enlazada
+        if (index == -1) return false;
         Vertex vertex = (Vertex) vertexList.getNode(index).data;
-        return vertex!=null && !vertex.edgesList.isEmpty()
+        return vertex != null && !vertex.edgesList.isEmpty()
                 && vertex.edgesList.contains(new EdgeWeight(b, null));
     }
 
     @Override
     public void addVertex(Object element) throws GraphException, ListException {
-        if(vertexList.isEmpty())
-            vertexList.add(new Vertex(element)); //agrego un nuevo objeto vertice
-        else if(!vertexList.contains(element))
-            vertexList.add(new Vertex(element));
+        // Corrected logic: add a new Vertex object, and ensure uniqueness by checking for a Vertex containing the element.
+        // It's crucial that SinglyLinkedList.contains and Vertex.equals handle comparing just the 'data' part.
+        if (!vertexList.contains(new Vertex(element))) // Pass a Vertex object for correct comparison if Vertex.equals is based on data
+            vertexList.add(new Vertex(element)); // agrego un nuevo objeto vertice
     }
 
     @Override
     public void addEdge(Object a, Object b) throws GraphException, ListException {
-        if(!containsVertex(a)||!containsVertex(b))
-            throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
-        addRemoveVertexEdgeWeight(a, b, null, "addEdge"); //agrego la arista
-
-
+        if (!containsVertex(a) || !containsVertex(b))
+            throw new GraphException("Cannot add edge between vertexes [" + a + "] and [" + b + "] because one or both do not exist.");
+        addRemoveVertexEdgeWeight(a, b, null, "addEdge"); // agrego la arista
     }
 
+    // *** CRITICAL FIX: INDEXING LOOP IS NOW CONSISTENTLY 0-BASED ***
     private int indexOf(Object element) throws ListException {
-        for(int i=1;i<=vertexList.size();i++){
-            Vertex vertex = (Vertex)vertexList.getNode(i).data;
-            if(util.Utility.compare(vertex.data, element)==0){
-                return i; //encontro el vertice
+        // The loop must go from 0 up to, but not including, vertexList.size()
+        for (int i = 0; i < vertexList.size(); i++) { // Corrected: i < vertexList.size()
+            Vertex vertex = (Vertex) vertexList.getNode(i).data;
+            if (util.Utility.compare(vertex.data, element) == 0) {
+                return i; // Found the vertex at index 'i'
             }
-        }//for
-        return -1; //significa q la data de todos los vertices no coinciden con element
+        }
+        return -1; // Element not found
     }
 
     @Override
     public void addWeight(Object a, Object b, Object weight) throws GraphException, ListException {
         if (!containsEdge(a, b))
-            throw new GraphException("There is no edge between the vertexes[" + a + "] y [" + b + "]");
-        addRemoveVertexEdgeWeight(a, b, weight, "addWeight"); //agrego la arista
-
+            throw new GraphException("There is no edge between the vertexes[" + a + "] and [" + b + "] to add weight.");
+        addRemoveVertexEdgeWeight(a, b, weight, "addWeight"); // actualiza el peso de la arista existente
     }
 
     @Override
     public void addEdgeWeight(Object a, Object b, Object weight) throws GraphException, ListException {
-        if(!containsVertex(a)||!containsVertex(b))
-            throw new GraphException("Cannot add edge between vertexes ["+a+"] y ["+b+"]");
-        if(!containsEdge(a, b)) {
-            addRemoveVertexEdgeWeight(a, b, weight, "addEdge"); //agrego la arista
-
+        if (!containsVertex(a) || !containsVertex(b))
+            throw new GraphException("Cannot add edge with weight between vertexes [" + a + "] and [" + b + "] because one or both do not exist.");
+        if (!containsEdge(a, b)) { // Only add the edge if it doesn't exist
+            addRemoveVertexEdgeWeight(a, b, weight, "addEdge"); // adds the edge with weight
+        } else {
+            addRemoveVertexEdgeWeight(a, b, weight, "addWeight"); // updates the weight of existing edge
         }
     }
 
     @Override
     public void removeVertex(Object element) throws GraphException, ListException {
-        if(isEmpty())
-            throw new GraphException("Directed  Linked List Graph is Empty");
-        boolean removed = false;
-        if(!vertexList.isEmpty() && containsVertex(element)){
-            for (int i = 1; !removed&&i <= vertexList.size(); i++) {
-                Vertex vertex = (Vertex) vertexList.getNode(i).data;
-                if(util.Utility.compare(vertex.data, element)==0){ //ya lo encontro
-                    vertexList.remove(new Vertex(element));
-                    removed = true;
-                    //ahora se debe eliminar la entrada de ese vertice de todas
-                    //las listas de aristas de los otros vertices
-                    int n = vertexList.size();
-                    for (int j=1; vertexList!=null&&!vertexList.isEmpty()&&j<=n; j++) {
-                        vertex = (Vertex) vertexList.getNode(j).data;
-                        if(!vertex.edgesList.isEmpty())
-                            addRemoveVertexEdgeWeight(vertex.data, element, null, "remove");
-                    }
-                }//if
-            }//for i
-        }//if
+        if (isEmpty()) {
+            throw new GraphException("Directed Linked List Graph is Empty");
+        }
+
+        int vertexToRemoveIndex = indexOf(element);
+        if (vertexToRemoveIndex == -1) {
+            throw new GraphException("Vertex [" + element + "] not found in the graph.");
+        }
+
+        // 1. Remove the vertex from the main vertex list
+        // It's crucial that Vertex.equals() correctly identifies a Vertex object by its 'data'.
+        vertexList.remove(new Vertex(element));
+
+        // 2. Remove all edges that pointed TO the removed vertex
+        // We must iterate over all remaining vertices in the graph's main list
+        // and check their edgesList for any edge whose destination is 'element'.
+        // *** CRITICAL FIX: LOOP IS NOW CONSISTENTLY 0-BASED ***
+        for (int i = 0; i < vertexList.size(); i++) { // Loop over the updated (potentially smaller) vertex list
+            Vertex otherVertex = (Vertex) vertexList.getNode(i).data;
+            if (otherVertex != null && !otherVertex.edgesList.isEmpty()) {
+                // Create an EdgeWeight with 'element' as destination for correct removal
+                // (assuming EdgeWeight.equals() and Utility.compare() work based on 'edge' property).
+                otherVertex.edgesList.remove(new EdgeWeight(element, null));
+            }
+        }
     }
 
     @Override
     public void removeEdge(Object a, Object b) throws GraphException, ListException {
-        if(!containsVertex(a)||!containsVertex(b))
-            throw new GraphException("There's no some of the vertexes");
-        addRemoveVertexEdgeWeight(a, b, null, "remove"); //suprimo la arista
-
+        if (!containsVertex(a) || !containsVertex(b))
+            throw new GraphException("Cannot remove edge: one or both vertexes [" + a + "] and [" + b + "] do not exist.");
+        if (!containsEdge(a, b))
+            throw new GraphException("Cannot remove edge: there is no edge between vertexes [" + a + "] and [" + b + "].");
+        addRemoveVertexEdgeWeight(a, b, null, "remove"); // suppresses the edge
     }
 
-    private void addRemoveVertexEdgeWeight(Object a, Object b, Object weight, String action) throws ListException{
-        for (int i = 1; i <= vertexList.size(); i++) {
+    // Helper method to add, update weight, or remove edges
+    private void addRemoveVertexEdgeWeight(Object a, Object b, Object weight, String action) throws ListException {
+        // *** CRITICAL FIX: LOOP IS NOW CONSISTENTLY 0-BASED ***
+        for (int i = 0; i < vertexList.size(); i++) { // Loop condition: i < size()
             Vertex vertex = (Vertex) vertexList.getNode(i).data;
-            if(util.Utility.compare(vertex.data, a)==0){
-                switch(action){
+            if (util.Utility.compare(vertex.data, a) == 0) { // If we find vertex 'a'
+                switch (action) {
                     case "addEdge":
                         vertex.edgesList.add(new EdgeWeight(b, weight));
                         break;
                     case "addWeight":
-                        vertex.edgesList.getNode(new EdgeWeight(b, weight))
-                                .setData(new EdgeWeight(b, weight));
+                        // Find the edge node that connects 'a' to 'b' and update its weight
+                        Node edgeNode = vertex.edgesList.getNode(new EdgeWeight(b, null)); // Search for the edge by destination 'b'
+                        if (edgeNode != null) {
+                            // Assuming node's data is an EdgeWeight object, update its weight
+                            ((EdgeWeight) edgeNode.getData()).setWeight(weight);
+                        } else {
+                            // This case indicates an internal logic error if containsEdge was true but getNode failed.
+                            // Or, if EdgeWeight.equals requires weight for comparison and it was null.
+                            // For robustness, consider how EdgeWeight.equals behaves with null weight.
+                            throw new ListException("Edge not found when trying to add/update weight.");
+                        }
                         break;
                     case "remove":
-                        if(vertex.edgesList!=null&&!vertex.edgesList.isEmpty())
-                            vertex.edgesList.remove(new EdgeWeight(b, weight));
+                        if (!vertex.edgesList.isEmpty())
+                            vertex.edgesList.remove(new EdgeWeight(b, weight)); // Use an EdgeWeight for comparison during removal
+                        break;
                 }
+                return; // Once action is performed on vertex 'a', we can exit.
             }
         }
     }
 
-    // Recorrido en profundidad
+    // Recorrido en profundidad (DFS)
     @Override
     public String dfs() throws GraphException, StackException, ListException {
-        setVisited(false);//marca todos los vertices como no vistados
-        // inicia en el vertice 1
-        Vertex vertex = (Vertex)vertexList.getNode(1).data;
-        String info =vertex+", ";
-        vertex.setVisited(true); //lo marca
+        setVisited(false); // Mark all vertices as unvisited
+        if (isEmpty()) {
+            throw new GraphException("Directed Linked List Graph is Empty for DFS");
+        }
+
+        // *** CRITICAL FIX: STARTING NODE INDEX MUST BE 0 ***
+        // Start traversal from the first vertex (index 0)
+        Vertex startVertex = (Vertex) vertexList.getNode(0).data;
+        String info = startVertex.data + ", "; // Only show vertex data for clarity
+        startVertex.setVisited(true); // Mark as visited
         stack.clear();
-        stack.push(1); //lo apila
-        while( !stack.isEmpty() ){
-            // obtiene un vertice adyacente no visitado,
-            //el que esta en el tope de la pila
-            int index = adjacentVertexNotVisited((int) stack.top());
-            if(index==-1) // no lo encontro
-                stack.pop();
-            else{
-                vertex = (Vertex)vertexList.getNode(index).data;
-                vertex.setVisited(true); // lo marca
-                info+=vertex+", ";
-                stack.push(index); //inserta la posicion
+        stack.push(0); // Push the index of the starting vertex (0)
+
+        while (!stack.isEmpty()) {
+            int currentVertexIndex = (int) stack.top(); // Get the index of the vertex at the stack top
+            int nextAdjacentIndex = getUnvisitedAdjacentVertex(currentVertexIndex); // Find an unvisited adjacent vertex
+
+            if (nextAdjacentIndex == -1) { // No unvisited adjacent found from current vertex
+                stack.pop(); // Pop current vertex
+            } else {
+                Vertex nextVertex = (Vertex) vertexList.getNode(nextAdjacentIndex).data;
+                nextVertex.setVisited(true); // Mark as visited
+                info += nextVertex.data + ", "; // Add to info string
+                stack.push(nextAdjacentIndex); // Push the index of the newly visited vertex
             }
         }
         return info;
-    }//dfs
+    }
 
-    // Recorrido en amplitud
+    // Recorrido en amplitud (BFS)
     @Override
     public String bfs() throws GraphException, QueueException, ListException {
-        setVisited(false);//marca todos los vertices como no visitados
-        // inicia en el vertice 1
-        Vertex vertex = (Vertex)vertexList.getNode(1).data;
-        String info =vertex+", ";
-        vertex.setVisited(true); //lo marca
+        setVisited(false); // Mark all vertices as unvisited
+        if (isEmpty()) {
+            throw new GraphException("Directed Linked List Graph is Empty for BFS");
+        }
+
+        // *** CRITICAL FIX: STARTING NODE INDEX MUST BE 0 ***
+        // Start traversal from the first vertex (index 0)
+        Vertex startVertex = (Vertex) vertexList.getNode(0).data;
+        String info = startVertex.data + ", "; // Only show vertex data
+        startVertex.setVisited(true); // Mark as visited
         queue.clear();
-        queue.enQueue(1); // encola el elemento
-        int index2;
-        while(!queue.isEmpty()){
-            int index1 = (int) queue.deQueue(); // remueve el vertice de la cola
-            // hasta que no tenga vecinos sin visitar
-            while((index2=adjacentVertexNotVisited(index1)) != -1 ){
-                // obtiene uno
-                vertex = (Vertex)vertexList.getNode(index2).data;
-                vertex.setVisited(true); //lo marco
-                info+=vertex+", ";
-                queue.enQueue(index2); // lo encola
+        queue.enQueue(0); // Enqueue the index of the starting vertex (0)
+
+        while (!queue.isEmpty()) {
+            int currentVertexIndex = (int) queue.deQueue(); // Dequeue the index of the current vertex
+            int nextAdjacentIndex;
+            // While there are unvisited neighbors from the current vertex
+            while ((nextAdjacentIndex = getUnvisitedAdjacentVertex(currentVertexIndex)) != -1) {
+                Vertex nextVertex = (Vertex) vertexList.getNode(nextAdjacentIndex).data;
+                nextVertex.setVisited(true); // Mark as visited
+                info += nextVertex.data + ", "; // Add to info string
+                queue.enQueue(nextAdjacentIndex); // Enqueue the index of the newly visited vertex
             }
         }
         return info;
     }
 
-    //setteamos el atributo visitado del vertice respectivo
+    // Marks all vertices as visited or unvisited
+    // *** CRITICAL FIX: LOOP IS NOW CONSISTENTLY 0-BASED ***
     private void setVisited(boolean value) throws ListException {
-        for (int i=1; i<=vertexList.size(); i++) {
-            Vertex vertex = (Vertex)vertexList.getNode(i).data;
-            vertex.setVisited(value); //value==true or false
-        }//for
+        for (int i = 0; i < vertexList.size(); i++) { // Loop condition: i < size()
+            Vertex vertex = (Vertex) vertexList.getNode(i).data;
+            vertex.setVisited(value);
+        }
     }
 
-    private int adjacentVertexNotVisited(int index) throws ListException {
-        Vertex vertex1 = (Vertex)vertexList.getNode(index).data;
-        for(int i=1; i<=vertexList.size(); i++){
-            Vertex vertex2 = (Vertex)vertexList.getNode(i).data;
-            if(!vertex2.edgesList.isEmpty()&&vertex2.edgesList
-                    .contains(new EdgeWeight(vertex1.data, null))
-                    && !vertex2.isVisited())
-                return i;
+    // Gets the index of an unvisited adjacent vertex from the vertex at 'currentVertexIndex'
+    private int getUnvisitedAdjacentVertex(int currentVertexIndex) throws ListException {
+        Vertex currentVertex = (Vertex) vertexList.getNode(currentVertexIndex).data;
+
+        // Iterate over all vertices in the graph to find an unvisited adjacent one
+        // *** CRITICAL FIX: LOOP IS NOW CONSISTENTLY 0-BASED ***
+        for (int i = 0; i < vertexList.size(); i++) { // Loop condition: i < size()
+            Vertex possibleAdjacentVertex = (Vertex) vertexList.getNode(i).data;
+
+            // Conditions for an unvisited adjacent vertex:
+            // 1. Not the same vertex (unless self-loops are explicitly desired for traversals, which is rare)
+            // 2. The 'currentVertex' has an edge pointing to 'possibleAdjacentVertex'.
+            // 3. 'possibleAdjacentVertex' has not been visited.
+            if (util.Utility.compare(currentVertex.data, possibleAdjacentVertex.data) != 0 && // Not the same vertex
+                    currentVertex.edgesList.contains(new EdgeWeight(possibleAdjacentVertex.data, null)) && // currentVertex points to possibleAdjacentVertex
+                    !possibleAdjacentVertex.isVisited()) { // possibleAdjacentVertex has not been visited
+                return i; // Returns the 0-based index of the unvisited neighbor
+            }
         }
-        return -1;
+        return -1; // No unvisited neighbors found
     }
 
     @Override
     public String toString() {
-        String result = "Directed  Linked List Graph Content...";
+        String result = "Directed Linked List Graph Content...\n";
         try {
-            for(int i=1; i<=vertexList.size(); i++){
-                Vertex vertex = (Vertex)vertexList.getNode(i).data;
-                result+="\nThe vertex in the position "+i+" is: "+vertex+"\n";
-                if(!vertex.edgesList.isEmpty()){
-                    result+="........EDGES AND WEIGHTS: "+vertex.edgesList+"\n";
-                }//if
-
-            }//for
+            if (isEmpty()) return result + "Graph is empty.";
+            // *** CRITICAL FIX: LOOP IS NOW CONSISTENTLY 0-BASED FOR PRINTING ***
+            for (int i = 0; i < vertexList.size(); i++) { // Loop condition: i < size()
+                Vertex vertex = (Vertex) vertexList.getNode(i).data;
+                result += "\nThe vertex in the position " + i + " is: " + vertex.data + "\n"; // Show 0-based index 'i'
+                if (!vertex.edgesList.isEmpty()) {
+                    result += "........EDGES AND WEIGHTS: " + vertex.edgesList.toString() + "\n";
+                }
+            }
         } catch (ListException ex) {
             System.out.println(ex.getMessage());
         }
-
         return result;
     }
 }

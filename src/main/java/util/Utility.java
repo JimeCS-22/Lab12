@@ -28,6 +28,7 @@ public class Utility {
         return new Random().nextInt(bound);
     }
 
+    // In util.Utility.java
     public static int compare(Object a, Object b) {
         switch (instanceOf(a, b)){
             case "Integer":
@@ -39,13 +40,16 @@ public class Utility {
             case "Character":
                 Character c1 = (Character)a; Character c2 = (Character)b;
                 return c1.compareTo(c2)<0 ? -1 : c1.compareTo(c2)>0 ? 1 : 0;
-
             case "EdgeWeight":
                 EdgeWeight ew1 = (EdgeWeight) a ; EdgeWeight ew2 = (EdgeWeight) b;
-                return compare(ew1.getEdge(), ew2.getEdge());
-
+                return compare(ew1.getEdge(), ew2.getEdge()); // Assuming getEdge() returns comparable object
+            case "Vertex": // Add this case
+                // Assuming your Vertex class is 'domain.Vertex' and has a 'data' field
+                domain.Vertex v1 = (domain.Vertex) a;
+                domain.Vertex v2 = (domain.Vertex) b;
+                return compare(v1.getData(), v2.getData()); // Compare based on their internal data
         }
-        return 2; //Unknown
+        return 2; //Unknown or unhandled type comparison
     }
 
     private static String instanceOf(Object a, Object b) {
@@ -53,6 +57,7 @@ public class Utility {
         if(a instanceof String && b instanceof String) return "String";
         if(a instanceof Character && b instanceof Character) return "Character";
         if (a instanceof EdgeWeight && b instanceof EdgeWeight) return "EdgeWeight";
+        if (a instanceof domain.Vertex && b instanceof domain.Vertex) return "Vertex"; // Add this line
         return "Unknown";
     }
 
