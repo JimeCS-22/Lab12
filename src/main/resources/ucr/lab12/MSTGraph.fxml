@@ -53,8 +53,8 @@
                 <RadioButton fx:id="AdjacencyMatrix" layoutX="60.0" layoutY="117.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency Matrix" textFill="#efe9e9" />
                 <RadioButton fx:id="AdjacencyList" layoutX="60.0" layoutY="139.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency List" textFill="#efe9e9" />
                 <RadioButton fx:id="LinkedList" layoutX="60.0" layoutY="165.0" mnemonicParsing="false" onAction="#LinkedListOnAction" prefHeight="18.0" prefWidth="126.0" text="Linked List" textFill="#efe9e9" />
-            <RadioButton fx:id="AdjacencyMatrix1" layoutX="643.0" layoutY="126.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="18.0" prefWidth="126.0" text="Kruskal" textFill="#efe9e9" />
-            <RadioButton fx:id="AdjacencyList1" layoutX="650.0" layoutY="156.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Prim" textFill="#efe9e9" />
+            <RadioButton fx:id="Kruskal" layoutX="643.0" layoutY="126.0" mnemonicParsing="false" onAction="#KrusalOnAction" prefHeight="18.0" prefWidth="126.0" text="Kruskal" textFill="#efe9e9" />
+            <RadioButton fx:id="Prim" layoutX="650.0" layoutY="156.0" mnemonicParsing="false" onAction="#PrimOnAction" prefHeight="18.0" prefWidth="126.0" text="Prim" textFill="#efe9e9" />
             <Text layoutX="27.0" layoutY="104.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Graph Type" textAlignment="CENTER" wrappingWidth="265.3492431640625">
                <font>
                   <Font name="Serif Regular" size="24.0" />

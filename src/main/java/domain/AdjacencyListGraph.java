@@ -1,10 +1,13 @@
 package domain;
 
 import domain.list.ListException;
+import domain.list.SinglyLinkedList;
 import domain.queue.LinkedQueue;
 import domain.queue.QueueException;
 import domain.stack.LinkedStack;
 import domain.stack.StackException;
+
+import java.util.*;
 
 public class AdjacencyListGraph implements Graph {
     public Vertex[] vertexList; //arreglo de objetos tupo vértice
@@ -283,4 +286,108 @@ public class AdjacencyListGraph implements Graph {
             throw new GraphException("Error adding reverse edge to destination vertex list: " + e.getMessage());
         }
     }
+
+    public AdjacencyListGraph primMST(Object startVertexData) throws GraphException, ListException {
+        if (isEmpty() || !containsVertex(startVertexData)) {
+            throw new GraphException("Grafo vacío o vértice inicial no existe.");
+        }
+
+        AdjacencyListGraph mst = new AdjacencyListGraph(this.n);
+        // 1. Añadir todos los vértices del grafo original al MST
+        for (int i = 0; i < counter; i++) {
+            if (vertexList[i] != null) {
+                mst.addVertex(vertexList[i].data);
+            }
+        }
+
+        Map<Object, Integer> key = new HashMap<>();
+        Map<Object, Object> parent = new HashMap<>();
+        PriorityQueue<EdgeWeight> minHeap = new PriorityQueue<>();
+        Set<Object> visited = new HashSet<>();
+
+        // Inicializar
+        for (int i = 0; i < counter; i++) {
+            if (vertexList[i] != null) {
+                Object vertexData = vertexList[i].data;
+                key.put(vertexData, Integer.MAX_VALUE);
+                parent.put(vertexData, null);
+            }
+        }
+
+        key.put(startVertexData, 0);
+        minHeap.add(new EdgeWeight(new Edge(startVertexData, startVertexData), 0));
+
+
+        while (!minHeap.isEmpty() && visited.size() < counter) { // Usar 'counter'
+            EdgeWeight currentEdgeWeight = minHeap.poll();
+            Edge currentEdge = (Edge) currentEdgeWeight.getEdge();
+            Object u = null;
+
+            if (visited.contains(currentEdge.getElementA()) && !visited.contains(currentEdge.getElementB())) {
+                u = currentEdge.getElementB();
+            } else if (!visited.contains(currentEdge.getElementA()) && visited.contains(currentEdge.getElementB())) {
+                u = currentEdge.getElementA();
+            } else if (!visited.contains(currentEdge.getElementA()) && !visited.contains(currentEdge.getElementB())) {
+                // Esto ocurre para el primer vértice (startVertexData, startVertexData) o si el grafo es disconexo
+                // Si la arista ficticia es (X,X) y X no ha sido visitado:
+                if (util.Utility.compare(currentEdge.getElementA(), currentEdge.getElementB()) == 0 && util.Utility.compare(currentEdge.getElementA(), startVertexData) == 0) {
+                    u = startVertexData;
+                } else { // Caso de grafo disconexo o error lógico, saltar
+                    continue;
+                }
+            } else { // Ambos ya visitados, saltar
+                continue;
+            }
+
+
+            if (visited.contains(u)) { // Si ya fue añadido al MST, ignorar
+                continue;
+            }
+
+            visited.add(u); // Marcar el vértice como visitado
+
+            // Si u no es el vértice inicial (la arista ficticia), añade la arista real al mstGraph
+            Object p = parent.get(u); // El padre de 'u' en el MST
+            if (p != null) { // Si tiene un padre (no es el primer nodo)
+                // La arista que conecta p con u es parte del MST
+                Edge edgeToMst = new Edge(p, u);
+                // Usa el peso actual de la arista (currentEdgeWeight.getWeight())
+                mst.addEdgeWeightTwo(p, u, edgeToMst, (Integer) currentEdgeWeight.getWeight());
+            }
+
+
+            // Recorrer todos los adyacentes de 'u'
+            int uIndex = indexOf(u);
+            if (uIndex != -1 && vertexList[uIndex].edgesList != null) {
+                SinglyLinkedList edgesOfU = vertexList[uIndex].edgesList;
+                for (int i = 0; i < edgesOfU.size(); i++) {
+                    EdgeWeight neighborEW = (EdgeWeight) edgesOfU.get(i);
+                    Edge neighborEdge = (Edge) neighborEW.getEdge();
+                    Object vNeighbor = null; // Vértice adyacente a 'u'
+
+                    // Determinar el vecino 'vNeighbor' de la arista 'neighborEdge' con respecto a 'u'
+                    if (util.Utility.compare(neighborEdge.getElementA(), u) == 0) {
+                        vNeighbor = neighborEdge.getElementB();
+                    } else if (util.Utility.compare(neighborEdge.getElementB(), u) == 0) {
+                        vNeighbor = neighborEdge.getElementA();
+                    }
+
+                    if (vNeighbor != null) {
+                        int weight = (Integer) neighborEW.getWeight();
+
+                        // Si 'vNeighbor' no ha sido visitado y la arista (u,vNeighbor) ofrece un peso menor
+                        // que el que 'vNeighbor' ya tenía para conectarse al MST
+                        if (!visited.contains(vNeighbor) && weight < key.get(vNeighbor)) {
+                            key.put(vNeighbor, weight);
+                            parent.put(vNeighbor, u); // 'u' es ahora el padre de 'vNeighbor' en el MST
+                            // Añadir la arista al minHeap para consideración futura
+                            minHeap.add(new EdgeWeight(new Edge(u, vNeighbor), weight));
+                        }
+                    }
+                }
+            }
+        }
+        return mst;
+    }
+
 }

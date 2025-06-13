@@ -20,8 +20,6 @@ import java.util.*;
 
 public class MSTController {
     @javafx.fxml.FXML
-    private RadioButton AdjacencyMatrix1;
-    @javafx.fxml.FXML
     private RadioButton AdjacencyList;
     @javafx.fxml.FXML
     private Pane mainPain;
@@ -29,8 +27,6 @@ public class MSTController {
     private Pane pane2;
     @javafx.fxml.FXML
     private Pane pane3;
-    @javafx.fxml.FXML
-    private RadioButton AdjacencyList1;
     @javafx.fxml.FXML
     private RadioButton AdjacencyMatrix;
     @javafx.fxml.FXML
@@ -41,39 +37,52 @@ public class MSTController {
     private Pane pane31;
 
     private AdjacencyListGraph graph; // El grafo principal
+    private AdjacencyListGraph mstGraph;
 
     private final int MAX_VERTICES = 10;
     private final int NUM_EDGES_TO_ADD = 15;
+    @FXML
+    private RadioButton Prim;
+    @FXML
+    private RadioButton Kruskal;
 
     @FXML
     public void initialize() {
-
         graph = new AdjacencyListGraph(MAX_VERTICES);
+        mstGraph = new AdjacencyListGraph(MAX_VERTICES); // Inicializa el grafo MST
 
-        AdjacencyList.setSelected(true);
+        AdjacencyList.setSelected(true); // Selecciona la lista de adyacencia por defecto
 
-        randomizeOnAction(null);
+        if (Prim != null) {
+            Prim.setSelected(true); // Selecciona Prim por defecto para el MST
+        }
+        if (Kruskal != null && !Prim.isSelected()) { // Si Prim no está seleccionado, selecciona Kruskal
+            Kruskal.setSelected(true);
+        }
+
+        randomizeOnAction(null); // Genera y dibuja al iniciar la aplicación
     }
 
-    @javafx.fxml.FXML
+    @FXML
     public void randomizeOnAction(ActionEvent actionEvent) {
+        generateRandomGraph(); // Genera el grafo original aleatorio
+        drawGraph(graph, pane3); // Dibuja el grafo original en pane3
 
-        generateRandomGraph();
-        drawGraph();
-
+        generateAndDrawMST(); // Calcula y dibuja el MST en pane31
     }
 
     private void generateRandomGraph() {
         try {
             Random rand = new Random();
-            graph.clear();
+            graph.clear(); // Limpia el grafo antes de generar uno nuevo
 
-            // Usando SinglyLinkedList (NO GENÉRICA)
+            // Usa SinglyLinkedList para manejar los caracteres disponibles
             SinglyLinkedList availableCharacters = new SinglyLinkedList();
             for (char c = 'A'; c <= 'Z'; c++) {
                 availableCharacters.add(c);
             }
 
+            // Añadir vértices aleatorios
             for (int i = 0; i < MAX_VERTICES; i++) {
                 if (availableCharacters.isEmpty()) break;
                 int randomIndex = rand.nextInt(availableCharacters.size());
@@ -82,6 +91,7 @@ public class MSTController {
                 availableCharacters.remove(charToRemove);
             }
 
+            // Obtener los vértices actualmente en el grafo para crear aristas
             SinglyLinkedList currentVertices = new SinglyLinkedList();
             for (int i = 0; i < graph.size(); i++) {
                 currentVertices.add(graph.vertexList[i].data);
@@ -89,19 +99,20 @@ public class MSTController {
 
             int edgesAdded = 0;
             long startTime = System.nanoTime();
-            final long TIMEOUT = 5_000_000_000L; // 5 segundos de timeout
+            final long TIMEOUT = 5_000_000_000L; // 5 segundos para evitar bucles infinitos
 
+            // Añadir aristas aleatorias
             while (edgesAdded < NUM_EDGES_TO_ADD && (System.nanoTime() - startTime < TIMEOUT)) {
                 if (currentVertices.size() < 2) break;
 
                 Object v1 = currentVertices.get(rand.nextInt(currentVertices.size()));
                 Object v2 = currentVertices.get(rand.nextInt(currentVertices.size()));
 
+                // Asegurarse de que no sea el mismo vértice y que la arista no exista ya
                 if (util.Utility.compare(v1, v2) != 0 && !graph.containsEdge(v1, v2)) {
-                    int weight = rand.nextInt(50) + 1;
-                    // Aquí es donde se crea la arista Edge, y se encapsula en EdgeWeight
-                    Edge newEdge = new Edge(v1, v2); // Crea una instancia de tu clase Edge
-                    graph.addEdgeWeightTwo(v1, v2, newEdge, weight); // NECESITAS ESTE MÉTODO EN TU GRAFO
+                    int weight = rand.nextInt(50) + 1; // Peso entre 1 y 50
+                    Edge newEdge = new Edge(v1, v2);
+                    graph.addEdgeWeightTwo(v1, v2, newEdge, weight); // Añade la arista con peso
                     edgesAdded++;
                 }
             }
@@ -109,14 +120,65 @@ public class MSTController {
         } catch (GraphException | ListException e) {
             showAlert("Error al generar grafo aleatorio", e.getMessage());
         } catch (Exception e) {
-            showAlert("Error Inesperado", "Un error inesperado ocurrió: " + e.getMessage());
+            showAlert("Error Inesperado", "Un error inesperado ocurrió al generar el grafo: " + e.getMessage());
         }
     }
 
-    private void drawGraph() {
+    private void generateAndDrawMST() {
         try {
-            drawGraphContent(graph, pane3);
-            pane31.getChildren().clear();
+            mstGraph.clear(); // Limpia el grafo MST anterior para el nuevo cálculo
+
+            // Verifica si el grafo original existe y no está vacío
+            if (graph == null || graph.isEmpty()) {
+                showAlert("Grafo vacío", "El grafo original está vacío, no se puede generar un MST.");
+                pane31.getChildren().clear(); // Asegúrate de que el panel del MST también se limpie
+                return;
+            }
+
+            // Lógica para seleccionar y ejecutar el algoritmo de MST
+            if (Prim.isSelected()) {
+                // Para Prim, necesitamos un vértice inicial. Tomamos el primero del grafo.
+                // Asegúrate de que el grafo tenga al menos un vértice antes de intentar esto
+                if (graph.size() > 0 && graph.vertexList[0] != null) {
+                    Object startVertex = graph.vertexList[0].data; // Tomar el primer vértice como inicio para Prim
+                    mstGraph = graph.primMST(startVertex); // Llama a tu método primMST()
+                } else {
+                    showAlert("Grafo Invalido", "El grafo no tiene suficientes vértices para calcular un MST con Prim.");
+                    pane31.getChildren().clear();
+                    return;
+                }
+            } else if (Kruskal.isSelected()) {
+                // --- ESPACIO PARA EL ALGORITMO DE KRUSKAL ---
+                // Aquí iría la llamada a tu algoritmo de Kruskal si lo implementas.
+                // Por ejemplo: mstGraph = graph.kruskalMST();
+                // Si aún no lo has implementado, puedes mostrar una alerta:
+                showAlert("Algoritmo Kruskal", "El algoritmo de Kruskal no está implementado en este ejemplo.");
+                pane31.getChildren().clear(); // Limpia el panel si no hay implementación
+                return; // Salir del método si Kruskal no está implementado
+            } else {
+                // Si ningún algoritmo de MST está seleccionado (esto no debería pasar con ToggleGroup)
+                showAlert("Selección de algoritmo", "Por favor, selecciona Kruskal o Prim para el MST.");
+                pane31.getChildren().clear();
+                return;
+            }
+
+            // Dibuja el MST calculado en pane31
+            drawGraph(mstGraph, pane31);
+
+        } catch (GraphException | ListException e) {
+            showAlert("Error al generar o dibujar el MST", e.getMessage());
+        } catch (Exception e) {
+            showAlert("Error Inesperado al generar el MST", "Un error inesperado ocurrió: " + e.getMessage());
+        }
+    }
+
+    private void drawGraph(AdjacencyListGraph currentGraph, Pane targetPane) {
+        try {
+            // Importante: limpiar el panel antes de dibujar el nuevo grafo
+            targetPane.getChildren().clear();
+
+            // Llama al método principal de dibujo que maneja el posicionamiento y los elementos gráficos
+            drawGraphContent(currentGraph, targetPane);
         } catch (Exception e) {
             showAlert("Error al dibujar el grafo", e.getMessage());
         }
@@ -128,27 +190,37 @@ public class MSTController {
             return;
         }
 
+        // Este bloque es para añadir listeners de redimensionamiento una sola vez por panel.
+        // Asegura que el grafo se redibuje si el tamaño del panel cambia.
         if (drawingPane.getProperties().get("listenersAdded") == null) {
             Runnable redrawAction = () -> {
                 try {
+                    // Calcula el centro y el radio para dibujar el grafo en forma circular
                     double currentCenterX = drawingPane.getWidth() / 2;
                     double currentCenterY = drawingPane.getHeight() / 2;
                     double currentRadius = Math.min(currentCenterX, currentCenterY) * 0.8;
+
+                    // Llama a redrawGraphContent de nuevo para redibujar
+                    // (el clear() se maneja dentro de redrawGraphContent para este caso)
                     redrawGraphContent(currentGraph, currentCenterX, currentCenterY, currentRadius, drawingPane);
                 } catch (Exception e) {
-                    showAlert("Error al redibujar el grafo", e.getMessage());
+                    showAlert("Error al redibujar el grafo al redimensionar", e.getMessage());
                 }
             };
+            // Añade listeners a las propiedades de ancho y alto del panel
             drawingPane.widthProperty().addListener((obs, oldVal, newVal) -> redrawAction.run());
             drawingPane.heightProperty().addListener((obs, oldVal, newVal) -> redrawAction.run());
+            // Marca que los listeners ya fueron añadidos para este panel
             drawingPane.getProperties().put("listenersAdded", true);
         }
 
+        // Obtener las dimensiones iniciales o actuales del panel para el primer dibujo
         double initialCenterX = drawingPane.getWidth() / 2;
         double initialCenterY = drawingPane.getHeight() / 2;
         double initialRadius = Math.min(initialCenterX, initialCenterY) * 0.8;
 
         try {
+            // Llama a la lógica de dibujo que realmente crea los nodos y líneas
             redrawGraphContent(currentGraph, initialCenterX, initialCenterY, initialRadius, drawingPane);
         } catch (GraphException | ListException e) {
             showAlert("Error al dibujar el grafo inicial", e.getMessage());
@@ -156,113 +228,115 @@ public class MSTController {
     }
 
     private void redrawGraphContent(AdjacencyListGraph currentGraph, double centerX, double centerY, double radius, Pane targetPane) throws GraphException, ListException {
+        // Limpia el panel antes de dibujar. Esto es esencial para el redibujado.
         targetPane.getChildren().clear();
 
-        SinglyLinkedList positions = new SinglyLinkedList();
-        SinglyLinkedList verticesData = new SinglyLinkedList();
+        SinglyLinkedList positions = new SinglyLinkedList(); // Almacena las posiciones (x,y) de los nodos
+        SinglyLinkedList verticesData = new SinglyLinkedList(); // Almacena solo la data de los vértices
 
+        // Recolectar datos de los vértices que existen en el grafo actual
         for (int i = 0; i < currentGraph.size(); i++) {
-            if (currentGraph.vertexList[i].data instanceof Character) {
-                verticesData.add(currentGraph.vertexList[i].data);
-            } else {
-                System.err.println("Advertencia: Dato de vértice no es Character: " + currentGraph.vertexList[i].data);
-                verticesData.add(String.valueOf(currentGraph.vertexList[i].data).charAt(0));
+            if (currentGraph.vertexList[i] != null) { // Asegurarse de que el slot no sea nulo
+                if (currentGraph.vertexList[i].data instanceof Character) {
+                    verticesData.add(currentGraph.vertexList[i].data);
+                } else {
+                    // Manejar casos donde el dato no es un Character, si es posible
+                    System.err.println("Advertencia: Dato de vértice no es Character: " + currentGraph.vertexList[i].data);
+                    // Intenta convertir a Character o manejar de otra forma
+                    // Esto es una solución de respaldo, considera qué tipo de datos usarás.
+                    verticesData.add(String.valueOf(currentGraph.vertexList[i].data).charAt(0));
+                }
             }
         }
         int numNodes = verticesData.size();
 
-        // 1. Dibujar nodos
-        Map<Character, Circle> nodeCirclesForThisPane = new HashMap<>();
         for (int i = 0; i < numNodes; i++) {
             Character vertexData = (Character) verticesData.get(i);
 
+            // Calcular posición del nodo en un círculo (disposición circular)
             double angle = 2 * Math.PI * i / numNodes;
             double x = centerX + radius * Math.cos(angle);
             double y = centerY + radius * Math.sin(angle);
-            positions.add(new NodePosition<>(vertexData, x, y));
+            positions.add(new NodePosition<>(vertexData, x, y)); // Guardar posición del nodo
 
+            // Dibujar círculo que representa el nodo
             Circle circle = new Circle(x, y, 20, Color.DEEPSKYBLUE);
             circle.setStroke(Color.BLACK);
             targetPane.getChildren().add(circle);
-            nodeCirclesForThisPane.put(vertexData, circle);
 
+            // Dibujar texto del vértice (la letra del vértice)
             Text text = new Text(x - 10, y + 5, String.valueOf(vertexData));
             text.setFill(Color.RED);
             text.setFont(new Font(12));
             targetPane.getChildren().add(text);
         }
 
-        // 2. Dibujar aristas y pesos
+        // 2. Dibujar aristas y sus pesos
         for (int i = 0; i < numNodes; i++) {
             NodePosition<Character> node1Pos = (NodePosition<Character>) positions.get(i);
             Object node1Data = node1Pos.value;
 
-            for (int j = 0; j < numNodes; j++) {
-                if (i == j) continue;
+            try {
+                int node1Index = currentGraph.indexOf(node1Data);
+                if (node1Index != -1 && currentGraph.vertexList[node1Index].edgesList != null) {
+                    SinglyLinkedList edgesOfNode1 = currentGraph.vertexList[node1Index].edgesList;
 
-                NodePosition<Character> node2Pos = (NodePosition<Character>) positions.get(j);
-                Object node2Data = node2Pos.value;
+                    for (int k = 0; k < edgesOfNode1.size(); k++) {
+                        EdgeWeight ew = (EdgeWeight) edgesOfNode1.getNode(k).getData();
+                        Edge currentEdge = (Edge) ew.getEdge();
+                        Object targetNodeData = null;
 
-                // Solo dibuja una vez por par y verifica si existe la arista
-                if (i < j && currentGraph.containsEdge(node1Data, node2Data)) {
-                    Line line = new Line(node1Pos.x, node1Pos.y, node2Pos.x, node2Pos.y);
-                    line.setStrokeWidth(2);
-                    line.setStroke(Color.BLACK);
+                        if (util.Utility.compare(currentEdge.getElementA(), node1Data) == 0) {
+                            targetNodeData = currentEdge.getElementB();
+                        } else if (util.Utility.compare(currentEdge.getElementB(), node1Data) == 0) {
+                            targetNodeData = currentEdge.getElementA();
+                        }
 
-                    line.setOnMouseEntered(event -> {
-                        line.setStroke(Color.RED);
-                        line.setStrokeWidth(3);
-                    });
+                        if (targetNodeData != null) {
+                            NodePosition<Character> node2Pos = null;
+                            for (int p = 0; p < positions.size(); p++) {
+                                NodePosition<Character> pos = (NodePosition<Character>) positions.get(p);
+                                if (util.Utility.compare(pos.value, targetNodeData) == 0) {
+                                    node2Pos = pos;
+                                    break;
+                                }
+                            }
 
-                    line.setOnMouseExited(event -> {
-                        line.setStroke(Color.BLACK);
-                        line.setStrokeWidth(2);
-                    });
+                            if (node2Pos != null) {
+                                if (util.Utility.compare(node1Data, targetNodeData) < 0) {
+                                    Line line = new Line(node1Pos.x, node1Pos.y, node2Pos.x, node2Pos.y);
+                                    line.setStrokeWidth(2);
+                                    line.setStroke(Color.BLACK);
 
-                    targetPane.getChildren().add(line);
-                    line.toBack();
+                                    // Interacciones básicas con el mouse para las líneas (opcional)
+                                    line.setOnMouseEntered(event -> {
+                                        line.setStroke(Color.RED);
+                                        line.setStrokeWidth(3);
+                                    });
+                                    line.setOnMouseExited(event -> {
+                                        line.setStroke(Color.BLACK);
+                                        line.setStrokeWidth(2);
+                                    });
 
-                    // Obtener el peso usando la nueva lógica
-                    int weight = getEdgeWeightFromAdjacencyListGraph(currentGraph, node1Data, node2Data);
-                    Text weightText = new Text((node1Pos.x + node2Pos.x) / 2 + 5, (node1Pos.y + node2Pos.y) / 2 - 5, String.valueOf(weight));
-                    weightText.setFill(Color.BLUE);
-                    weightText.setFont(new Font(10));
-                    targetPane.getChildren().add(weightText);
+                                    targetPane.getChildren().add(line);
+                                    line.toBack(); // Mueve la línea al fondo para que los nodos estén encima
+
+                                    // Dibujar el peso de la arista (el valor numérico)
+                                    int weight = (Integer) ew.getWeight();
+                                    Text weightText = new Text((node1Pos.x + node2Pos.x) / 2 + 5, (node1Pos.y + node2Pos.y) / 2 - 5, String.valueOf(weight));
+                                    weightText.setFill(Color.BLUE);
+                                    weightText.setFont(new Font(10));
+                                    targetPane.getChildren().add(weightText);
+                                }
+                            }
+                        }
+                    }
                 }
+            } catch (ListException e) {
+                showAlert("Error al iterar aristas para dibujar", e.getMessage());
             }
         }
     }
-
-    // Método modificado para obtener el peso de la arista
-    private int getEdgeWeightFromAdjacencyListGraph(AdjacencyListGraph graph, Object source, Object destination) throws GraphException, ListException {
-        int sourceIndex = graph.indexOf(source);
-        if (sourceIndex == -1) throw new GraphException("Source vertex not found: " + source);
-
-        SinglyLinkedList edges = graph.vertexList[sourceIndex].edgesList;
-        for (int i = 0; i < edges.size(); i++) {
-            EdgeWeight ew = (EdgeWeight) edges.getNode(i).getData(); // Obtiene el EdgeWeight
-
-            // Aquí es donde obtenemos el objeto Edge del EdgeWeight
-            Object edgeObject = ew.getEdge();
-            if (!(edgeObject instanceof Edge)) {
-                // Esto es una validación de seguridad. Debería ser un Edge si tu grafo lo crea bien.
-                throw new GraphException("EdgeWeight contains an object that is not of type domain.Edge.");
-            }
-            Edge edge = (Edge) edgeObject; // Realiza el cast a domain.Edge
-
-            // Comparamos los elementos de la arista 'edge' con 'source' y 'destination'
-            // Para grafos no dirigidos, el orden de source/destination puede estar invertido en el Edge
-            if ((util.Utility.compare(edge.getElementA(), source) == 0 && util.Utility.compare(edge.getElementB(), destination) == 0) ||
-                    (util.Utility.compare(edge.getElementA(), destination) == 0 && util.Utility.compare(edge.getElementB(), source) == 0)) {
-
-                // Una vez que encontramos la arista correcta, devolvemos su peso
-                return (Integer) ew.getWeight();
-            }
-        }
-        throw new GraphException("Edge not found between " + source + " and " + destination);
-    }
-
-
 
 
     @javafx.fxml.FXML
@@ -289,4 +363,23 @@ public class MSTController {
         alert.showAndWait();
     }
 
-}
+    @FXML
+    public void KrusalOnAction(ActionEvent actionEvent) {
+
+        if (Kruskal.isSelected()) {
+            Prim.setSelected(false);
+            generateAndDrawMST();
+        }
+
+    }
+
+    @FXML
+    public void PrimOnAction(ActionEvent actionEvent) {
+
+        if (Prim.isSelected()) {
+            Kruskal.setSelected(false);
+            generateAndDrawMST();
+        }
+    }
+    }
+
