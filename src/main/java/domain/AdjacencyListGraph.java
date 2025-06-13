@@ -7,7 +7,7 @@ import domain.stack.LinkedStack;
 import domain.stack.StackException;
 
 public class AdjacencyListGraph implements Graph {
-    private Vertex[] vertexList; //arreglo de objetos tupo vértice
+    public Vertex[] vertexList; //arreglo de objetos tupo vértice
     private int n; //max de elementos
     private int counter; //contador de vertices
 
@@ -80,7 +80,7 @@ public class AdjacencyListGraph implements Graph {
 
     }
 
-    private int indexOf(Object element){
+    public int indexOf(Object element){
         for (int i = 0; i < counter; i++) {
             if(util.Utility.compare(vertexList[i].data, element)==0)
                 return i; //retorna la pos en el arreglo de objectos vertexList
@@ -231,5 +231,56 @@ public class AdjacencyListGraph implements Graph {
                 result+="\n......EDGES AND WEIGHTS: "+vertexList[i].edgesList.toString();
         }
         return result;
+    }
+
+    public void addEdgeWeightTwo(Object source, Object destination, Object edgeObject, Object weight) throws GraphException, ListException {
+        // 1. Validación de que los vértices existen en el grafo
+        int sourceIndex = indexOf(source);
+        int destIndex = indexOf(destination);
+
+        if (sourceIndex == -1 || destIndex == -1) {
+            throw new GraphException("addEdgeWeight: One or both vertices do not exist in the graph. Source: " + source + ", Destination: " + destination);
+        }
+
+        // 2. Validación y caste de los objetos Edge y Weight
+        if (!(edgeObject instanceof Edge)) {
+            throw new GraphException("addEdgeWeight: The provided edgeObject is not an instance of domain.Edge.");
+        }
+        Edge edge = (Edge) edgeObject; // Cast a tu clase Edge
+
+        if (!(weight instanceof Integer)) {
+            throw new GraphException("addEdgeWeight: The provided weight is not an Integer.");
+        }
+        Integer edgeWeightValue = (Integer) weight; // Cast a Integer
+
+        // 3. Comprobar si la arista ya existe para evitar duplicados
+        // Esta comprobación debe ser robusta para grafos no dirigidos.
+        // Si tu containsEdge ya maneja esto, excelente.
+        if (containsEdge(source, destination)) {
+            throw new GraphException("addEdgeWeight: Edge (" + source + ", " + destination + ") already exists in the graph.");
+        }
+
+        // 4. Crear el objeto EdgeWeight que encapsula la arista y su peso
+        // Usamos el constructor de tu clase EdgeWeight (Object edge, Object weight)
+        EdgeWeight newEdgeWeight = new EdgeWeight(edge, edgeWeightValue);
+
+        // 5. Añadir el EdgeWeight a la lista de adyacencia del vértice de origen
+        vertexList[sourceIndex].edgesList.add(newEdgeWeight);
+
+        // 6. Para GRAFOS NO DIRIGIDOS: Añadir la arista recíproca al vértice de destino
+        // Si tu grafo es dirigido, SIMPLEMENTE OMITE EL CÓDIGO A PARTIR DE AQUÍ (HASTA EL FINAL DEL MÉTODO).
+        // Crear un nuevo Edge con los elementos invertidos para la representación en la lista de adyacencia del destino.
+        // Esto es importante para que al recorrer desde el destino, se vea la arista hacia el origen.
+        Edge reverseEdge = new Edge(destination, source);
+        EdgeWeight reverseEdgeWeight = new EdgeWeight(reverseEdge, edgeWeightValue); // Mismo peso
+
+        try {
+            // Comprobar si la arista inversa ya existe (solo para no dirigidos)
+            if (!containsEdge(destination, source)) {
+                vertexList[destIndex].edgesList.add(reverseEdgeWeight);
+            }
+        } catch (ListException e) {
+            throw new GraphException("Error adding reverse edge to destination vertex list: " + e.getMessage());
+        }
     }
 }

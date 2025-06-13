@@ -46,19 +46,28 @@ public class HelloController {
     }
 
     @FXML
-    public void KruskalPrimOnAction(ActionEvent actionEvent) {
+    public void KruskalPrimOnAction(ActionEvent actionEvent) throws IOException {
+
+        load("/ucr/lab12/MSTGraph.fxml");
+
     }
 
     @FXML
-    public void OperationsOnAction(ActionEvent actionEvent) {
+    public void OperationsOnAction(ActionEvent actionEvent) throws IOException {
+
+        load("/ucr/lab12/Operations.fxml");
     }
 
     @FXML
-    public void DijkstraOnAction(ActionEvent actionEvent) {
+    public void DijkstraOnAction(ActionEvent actionEvent) throws IOException {
+
+        load("/ucr/lab12/ShortestPath.fxml");
     }
 
     @FXML
-    public void DirectedGraphOnAction(ActionEvent actionEvent) {
+    public void DirectedGraphOnAction(ActionEvent actionEvent) throws IOException {
+
+        load("/ucr/lab12/DirectedGraph.fxml");
     }
 }
 
