@@ -9,7 +9,6 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -18,34 +17,18 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
-
 import java.util.*;
-import javafx.scene.control.Label;
 import javafx.scene.input.ScrollEvent;
 
 public class ShortestController {
-    @FXML
-    private RadioButton AdjacencyList;
-    @FXML
-    private Pane mainPain;
-    @FXML
-    private Pane pane2;
-    @FXML
-    private RadioButton AdjacencyMatrix;
-    @FXML
-    private RadioButton LinkedList;
-    @FXML
-    private AnchorPane AP;
-    @FXML
-    private Pane pane31;
-    @FXML
-    private TableView<DijkstraResult> dijkstraTableView;
-    @FXML
-    private TableColumn<DijkstraResult, Integer> positionColumn;
-    @FXML
-    private TableColumn<DijkstraResult, Object> vertexColumn;
-    @FXML
-    private TableColumn<DijkstraResult, Integer> distanceColumn;
+    @FXML private RadioButton AdjacencyList;
+    @FXML private RadioButton AdjacencyMatrix;
+    @FXML private RadioButton LinkedList;
+    @FXML private Pane pane31;
+    @FXML private TableView<DijkstraResult> dijkstraTableView;
+    @FXML private TableColumn<DijkstraResult, Integer> positionColumn;
+    @FXML private TableColumn<DijkstraResult, Object> vertexColumn;
+    @FXML private TableColumn<DijkstraResult, Integer> distanceColumn;
 
     private AdjacencyListGraph adjacencyListGraph;
     private SinglyLinkedListGraph singlyLinkedListGraph;
@@ -187,12 +170,12 @@ public class ShortestController {
             NodePosition<?> nodePos = new NodePosition<>(vertexData, x, y);
             positionsMap.put(vertexData, nodePos);
 
-            Circle circle = new Circle(x, y, 20, Color.DEEPSKYBLUE);
+            Circle circle = new Circle(x, y, 20, Color.AQUAMARINE);
             circle.setStroke(Color.BLACK);
             targetPane.getChildren().add(circle);
 
             Text text = new Text(x - 10, y + 5, String.valueOf(vertexData));
-            text.setFill(Color.RED);
+            text.setFill(Color.BLACK);
             text.setFont(new Font(12));
             targetPane.getChildren().add(text);
         }
@@ -294,21 +277,12 @@ public class ShortestController {
 
         Line line = new Line(node1Pos.x, node1Pos.y, node2Pos.x, node2Pos.y);
         line.setStrokeWidth(2);
-        line.setStroke(Color.BLACK);
-
-        line.setOnMouseEntered(event -> {
-            line.setStroke(Color.RED);
-            line.setStrokeWidth(3);
-        });
-        line.setOnMouseExited(event -> {
-            line.setStroke(Color.BLACK);
-            line.setStrokeWidth(2);
-        });
+        line.setStroke(Color.DARKSEAGREEN);
 
         targetPane.getChildren().add(line);
         line.toBack();
         Text weightText = new Text((node1Pos.x + node2Pos.x) / 2 + 5, (node1Pos.y + node2Pos.y) / 2 - 5, String.valueOf(weight));
-        weightText.setFill(Color.BLUE);
+        weightText.setFill(Color.BLACK);
         weightText.setFont(new Font(10));
         targetPane.getChildren().add(weightText);
 

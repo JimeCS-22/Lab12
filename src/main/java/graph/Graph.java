@@ -33,4 +33,6 @@ public interface Graph {
     //recorre el grafo utilizando el algoritmo de búsqueda en amplitud
     //breadth-first search
     public String bfs()throws GraphException, QueueException, ListException;
+
+    Object getVertexData(int index) throws ListException, GraphException;
 }

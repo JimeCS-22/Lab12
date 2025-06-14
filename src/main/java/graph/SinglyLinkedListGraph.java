@@ -267,6 +267,11 @@ public class SinglyLinkedListGraph implements Graph {
         return info;
     }
 
+    @Override
+    public Object getVertexData(int index) throws ListException, GraphException {
+        return null;
+    }
+
     private void setVisited(boolean value) throws ListException {
         for (int i=0; i<vertexList.size(); i++) {
             Vertex vertex = (Vertex)vertexList.getNode(i).data;

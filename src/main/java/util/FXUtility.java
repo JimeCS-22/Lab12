@@ -61,4 +61,13 @@ public class FXUtility {
             return "YES";
         else return "NO";
     }
+
+    public static Optional<ButtonType> showAlert(String title, String message, Alert.AlertType information) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(null); // Sin encabezado
+        alert.setContentText(message);
+        alert.showAndWait();
+        return null;
+    }
 }

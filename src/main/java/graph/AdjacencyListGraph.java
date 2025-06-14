@@ -626,4 +626,11 @@ public class AdjacencyListGraph implements Graph {
         }
         throw new GraphException("Vertex not found: " + data);
     }
+
+    public Object getVertexData(int index) throws ListException {
+        if (index < 0 || index >= counter) {
+            throw new ListException("Vertex index out of bounds.");
+        }
+        return vertexList[index].data;
+    }
 }
