@@ -3,6 +3,7 @@ package Controller;
 import domain.list.ListException;
 import domain.list.SinglyLinkedList;
 import graph.*;
+import javafx.application.Platform; // Importación necesaria para Platform.runLater()
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -82,11 +83,17 @@ public class DirectedGraphController {
         LinkedList.setOnAction(this::LinkedListOnAction);
 
         initializeVertexDataPools();
-        randomizeOnAction(null);
 
-        if (edgeInfoLabel != null) {
-            edgeInfoLabel.setText("");
-        }
+        // **** INICIO DEL CAMBIO CLAVE ****
+        // Retrasamos la llamada a randomizeOnAction para que se ejecute
+        // después de que el layout inicial de la UI haya terminado y pane3 tenga sus dimensiones correctas.
+        Platform.runLater(() -> {
+            randomizeOnAction(null); // Esto generará y dibujará el grafo
+            if (edgeInfoLabel != null) {
+                edgeInfoLabel.setText(""); // Limpiar el label de info de arista al inicio
+            }
+        });
+        // **** FIN DEL CAMBIO CLAVE ****
     }
 
     private void initializeVertexDataPools() {
@@ -119,9 +126,9 @@ public class DirectedGraphController {
     public void randomizeOnAction(ActionEvent actionEvent) {
         generateRandomGraph();
         drawGraph(currentActiveGraph, pane3);
-        TextResult.setText("");
+        TextResult.setText(""); // Limpia la TextResult al generar un nuevo grafo
         if (edgeInfoLabel != null) {
-            edgeInfoLabel.setText("");
+            edgeInfoLabel.setText(""); // Asegura que el label de info de arista esté limpio
         }
     }
 
@@ -199,10 +206,12 @@ public class DirectedGraphController {
             int numNodes = verticesData.size();
             if (numNodes == 0) return;
 
+            // Es crucial que targetPane.getWidth() y targetPane.getHeight() devuelvan valores correctos aquí.
+            // Platform.runLater() ayuda a asegurar esto al retrasar la ejecución hasta que la UI esté lista.
             double centerX = targetPane.getWidth() / 2;
             double centerY = targetPane.getHeight() / 2;
             double radius = Math.min(centerX, centerY) * 0.8;
-            if (radius == 0) radius = 100;
+            if (radius <= 0) radius = 100; // Fallback robusto en caso de que las dimensiones sean 0 o negativas
 
             for (int i = 0; i < numNodes; i++) {
                 Object vertexData = verticesData.get(i);
@@ -484,7 +493,7 @@ public class DirectedGraphController {
 
     @FXML
     public void handleScrollZoom(Event event) {
-
+        // Implementación del zoom si es necesario
     }
 
     private void showAlert(String title, String message) {
@@ -495,15 +504,5 @@ public class DirectedGraphController {
         alert.showAndWait();
     }
 
-    private static class NodePosition<T> {
-        T data;
-        double x;
-        double y;
 
-        public NodePosition(T data, double x, double y) {
-            this.data = data;
-            this.x = x;
-            this.y = y;
-        }
-    }
 }
