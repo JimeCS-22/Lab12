@@ -595,4 +595,14 @@ public class SinglyLinkedListGraph implements Graph {
             subsets[xRoot].rank++;
         }
     }
+
+    public Vertex getVertex(Object data) throws GraphException, ListException {
+        for (int i = 1; i <= size(); i++) {
+            Object vertexData = getVertexDataByIndex(i);
+            if (vertexData.equals(data)) {
+                return (Vertex) getVertexList().getNode(i-1).data;
+            }
+        }
+        throw new GraphException("Vertex not found: " + data);
+    }
 }

@@ -18,7 +18,7 @@
             <children>
                 <Pane prefHeight="83.0" prefWidth="790.0" style="-fx-background-color: #536dde;">
                     <children>
-                        <Text layoutX="48.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Shortest Path" textAlignment="CENTER" wrappingWidth="642.94921875">
+                        <Text layoutX="48.0" layoutY="57.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Shortest Path (Dijkstra)" textAlignment="CENTER" wrappingWidth="642.94921875">
                             <font>
                                 <Font name="Serif Regular" size="47.0" />
                             </font>
@@ -47,20 +47,30 @@
                         <Font name="Arial" size="14.0" />
                     </font>
                 </Button>
-                <Pane fx:id="pane2" layoutY="191.0" onScroll="#handleScrollZoom" prefHeight="539.0" prefWidth="790.0" style="-fx-background-color: #4053A9;">
+                <Pane fx:id="pane2" layoutY="197.0" onScroll="#handleScrollZoom" prefHeight="533.0" prefWidth="790.0" style="-fx-background-color: #4053A9;">
                     <children>
                         <Pane fx:id="pane31" layoutX="14.0" layoutY="33.0" prefHeight="477.0" prefWidth="393.0" />
-                  <TableView layoutX="476.0" layoutY="25.0" prefHeight="501.0" prefWidth="292.0">
+                  <TableView fx:id="dijkstraTableView" layoutX="476.0" layoutY="79.0" prefHeight="376.0" prefWidth="230.0">
                     <columns>
-                      <TableColumn prefWidth="75.0" text="C1" />
-                      <TableColumn prefWidth="75.0" text="C2" />
+                      <TableColumn fx:id="positionColumn" prefWidth="75.0" text="Position" />
+                      <TableColumn fx:id="vertexColumn" prefWidth="75.0" text="Vertex" />
+                        <TableColumn fx:id="distanceColumn" prefWidth="79.0" text="Distance" />
                     </columns>
                   </TableView>
                     </children></Pane>
-                <RadioButton fx:id="AdjacencyMatrix" layoutX="60.0" layoutY="117.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency Matrix" textFill="#efe9e9" />
-                <RadioButton fx:id="AdjacencyList" layoutX="60.0" layoutY="139.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency List" textFill="#efe9e9" />
-                <RadioButton fx:id="LinkedList" layoutX="60.0" layoutY="165.0" mnemonicParsing="false" onAction="#LinkedListOnAction" prefHeight="18.0" prefWidth="126.0" text="Linked List" textFill="#efe9e9" />
-                <Text layoutX="27.0" layoutY="104.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Graph Type" textAlignment="CENTER" wrappingWidth="265.3492431640625">
+                <RadioButton fx:id="AdjacencyMatrix" layoutX="60.0" layoutY="117.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="20.0" prefWidth="144.0" text="Adjacency Matrix" textFill="#efe9e9">
+               <font>
+                  <Font size="14.0" />
+               </font></RadioButton>
+                <RadioButton fx:id="AdjacencyList" layoutX="60.0" layoutY="139.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency List" textFill="#efe9e9">
+               <font>
+                  <Font size="14.0" />
+               </font></RadioButton>
+                <RadioButton fx:id="LinkedList" layoutX="60.0" layoutY="165.0" mnemonicParsing="false" onAction="#LinkedListOnAction" prefHeight="18.0" prefWidth="126.0" text="Linked List" textFill="#efe9e9">
+               <font>
+                  <Font size="14.0" />
+               </font></RadioButton>
+                <Text layoutX="42.0" layoutY="104.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Graph Type" textAlignment="CENTER" wrappingWidth="162.3492431640625">
                     <font>
                         <Font name="Serif Regular" size="24.0" />
                     </font>
@@ -81,9 +91,9 @@
                         </LinearGradient>
                     </fill>
                 </Text>
-                <Text layoutX="510.0" layoutY="164.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Dijkstra" textAlignment="CENTER" wrappingWidth="265.3492431640625">
+                <Text layoutX="498.0" layoutY="169.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Dijkstra" textAlignment="CENTER" wrappingWidth="172.3492431640625">
                     <font>
-                        <Font name="Serif Regular" size="24.0" />
+                        <Font name="Serif Regular" size="36.0" />
                     </font>
                     <fill>
                         <LinearGradient endX="1.0" endY="1.0">

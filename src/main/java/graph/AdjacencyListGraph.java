@@ -617,4 +617,13 @@ public class AdjacencyListGraph implements Graph {
         }
         return null;
     }
+
+    public Vertex getVertex(Object data) throws GraphException, ListException {
+        for (int i = 0; i < size(); i++) {
+            if (vertexList[i] != null && vertexList[i].data.equals(data)) {
+                return vertexList[i];
+            }
+        }
+        throw new GraphException("Vertex not found: " + data);
+    }
 }
