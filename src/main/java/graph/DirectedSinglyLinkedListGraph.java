@@ -240,6 +240,10 @@ public class DirectedSinglyLinkedListGraph implements Graph {
         return -1;
     }
 
+    public SinglyLinkedList getVertexList() {
+        return this.vertexList;
+    }
+
     @Override
     public String toString() {
         String result = "\n";

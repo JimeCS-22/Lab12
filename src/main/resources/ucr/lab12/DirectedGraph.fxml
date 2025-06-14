@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Label?> <?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.Pane?>
@@ -62,23 +62,26 @@
                     </font>
                 </Button>
                 <Pane fx:id="pane2" layoutY="191.0" onScroll="#handleScrollZoom" prefHeight="539.0" prefWidth="790.0" style="-fx-background-color: #4053A9;">
-               <children>
-                  <Pane fx:id="pane3" layoutX="367.0" layoutY="33.0" prefHeight="477.0" prefWidth="393.0" />
-                  <TextArea fx:id="TextResult" layoutX="40.0" layoutY="43.0" prefHeight="454.0" prefWidth="297.0" />
-               </children></Pane>
-            <Button layoutX="293.0" layoutY="90.0" mnemonicParsing="false" onAction="#DFSOnAction" prefHeight="37.0" prefWidth="126.0" style="-fx-background-radius: 15; -fx-background-color: #9b9b9b;" text="DFS Tour">
-               <font>
-                  <Font name="Arial" size="14.0" />
-               </font>
-            </Button>
-            <Button layoutX="293.0" layoutY="148.0" mnemonicParsing="false" onAction="#BFSOnAction" prefHeight="37.0" prefWidth="126.0" style="-fx-background-radius: 15; -fx-background-color: #9b9b9b;" text="BFS Tour">
-               <font>
-                  <Font name="Arial" size="14.0" />
-               </font>
-            </Button>
-            <RadioButton fx:id="AdjacencyMatrix" layoutX="458.0" layoutY="100.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency Matrix" textFill="#efe9e9" />
-            <RadioButton fx:id="AdjacencyList" layoutX="458.0" layoutY="127.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency List" textFill="#efe9e9" />
-            <RadioButton fx:id="LinkedList" layoutX="458.0" layoutY="148.0" mnemonicParsing="false" onAction="#LinkedListOnAction" prefHeight="18.0" prefWidth="126.0" text="Linked List" textFill="#efe9e9" />
+                    <children>
+                        <Label fx:id="edgeInfoLabel" layoutX="367.0" layoutY="10.0" prefWidth="393.0" text="Pasa el mouse sobre una arista para ver su información" textFill="WHITE" />
+
+                        <Pane fx:id="pane3" layoutX="367.0" layoutY="33.0" prefHeight="477.0" prefWidth="393.0" />
+                        <TextArea fx:id="TextResult" layoutX="40.0" layoutY="43.0" prefHeight="454.0" prefWidth="297.0" />
+                    </children>
+                </Pane>
+                <Button layoutX="293.0" layoutY="90.0" mnemonicParsing="false" onAction="#DFSOnAction" prefHeight="37.0" prefWidth="126.0" style="-fx-background-radius: 15; -fx-background-color: #9b9b9b;" text="DFS Tour">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Button>
+                <Button layoutX="293.0" layoutY="148.0" mnemonicParsing="false" onAction="#BFSOnAction" prefHeight="37.0" prefWidth="126.0" style="-fx-background-radius: 15; -fx-background-color: #9b9b9b;" text="BFS Tour">
+                    <font>
+                        <Font name="Arial" size="14.0" />
+                    </font>
+                </Button>
+                <RadioButton fx:id="AdjacencyMatrix" layoutX="458.0" layoutY="100.0" mnemonicParsing="false" onAction="#adjacencyMatrizOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency Matrix" textFill="#efe9e9" />
+                <RadioButton fx:id="AdjacencyList" layoutX="458.0" layoutY="127.0" mnemonicParsing="false" onAction="#AdjacencyListOnAction" prefHeight="18.0" prefWidth="126.0" text="Adjacency List" textFill="#efe9e9" />
+                <RadioButton fx:id="LinkedList" layoutX="458.0" layoutY="148.0" mnemonicParsing="false" onAction="#LinkedListOnAction" prefHeight="18.0" prefWidth="126.0" text="Linked List" textFill="#efe9e9" />
             </children>
         </Pane>
     </children>

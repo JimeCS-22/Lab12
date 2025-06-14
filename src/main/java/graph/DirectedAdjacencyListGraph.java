@@ -79,7 +79,7 @@ public class DirectedAdjacencyListGraph implements Graph {
 
     }
 
-    private int indexOf(Object element){
+    public int indexOf(Object element){
         for (int i = 0; i < counter; i++) {
             if(util.Utility.compare(vertexList[i].data, element)==0)
                 return i; //retorna la pos en el arreglo de objectos vertexList
@@ -221,6 +221,21 @@ public class DirectedAdjacencyListGraph implements Graph {
         return -1;
     }
 
+    // Permite al controlador de la UI obtener el objeto Vertex real para el dibujo de aristas.
+    public Vertex getVertexObject(int index) throws GraphException {
+        if (index < 0 || index >= counter) {
+            throw new GraphException("Vertex index out of bounds: " + index);
+        }
+        return vertexList[index];
+    }
+
+    // Permite al controlador de la UI obtener el dato del vértice por su índice.
+    public Object getVertexData(int index) throws GraphException {
+        if (index < 0 || index >= counter) {
+            throw new GraphException("Vertex index out of bounds: " + index);
+        }
+        return vertexList[index].data;
+    }
 
 
     @Override
