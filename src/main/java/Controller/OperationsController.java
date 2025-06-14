@@ -354,26 +354,79 @@ public class OperationsController {
     @FXML
     public void addVertexOnAction(ActionEvent actionEvent) {
         try {
-            // Generar un vértice con valor numérico aleatorio (0-99)
-            int newVertexValue;
-            boolean vertexExists;
-            int attempts = 0;
-            final int MAX_ATTEMPTS = 100;
+            Object newVertex;
 
-            do {
-                newVertexValue = util.Utility.random(100); // Números del 0 al 99
-                vertexExists = currentActiveGraph.containsVertex(newVertexValue);
-                attempts++;
-            } while (vertexExists && attempts < MAX_ATTEMPTS);
+            if (currentActiveGraph instanceof DirectedAdjacencyMatrixGraph) {
+                // Para matriz de adyacencia, usar números
+                int newVertexValue;
+                boolean vertexExists;
+                int attempts = 0;
+                final int MAX_ATTEMPTS = 100;
 
-            if (vertexExists) {
-                FXUtility.showAlert("Error", "No se pudo generar un vértice único después de " + MAX_ATTEMPTS + " intentos",
-                        Alert.AlertType.ERROR);
-                return;
+                do {
+                    newVertexValue = util.Utility.random(100);
+                    vertexExists = currentActiveGraph.containsVertex(newVertexValue);
+                    attempts++;
+                } while (vertexExists && attempts < MAX_ATTEMPTS);
+
+                if (vertexExists) {
+                    FXUtility.showAlert("Error", "No se pudo generar un vértice único",
+                            Alert.AlertType.ERROR);
+                    return;
+                }
+                newVertex = newVertexValue;
+
+            } else if (currentActiveGraph instanceof DirectedAdjacencyListGraph) {
+                // Para lista de adyacencia, usar letras
+                char newVertexChar;
+                boolean vertexExists;
+                int attempts = 0;
+                final int MAX_ATTEMPTS = 100;
+                String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+                do {
+                    newVertexChar = alphabet.charAt(util.Utility.random(alphabet.length()));
+                    vertexExists = currentActiveGraph.containsVertex(newVertexChar);
+                    attempts++;
+                } while (vertexExists && attempts < MAX_ATTEMPTS);
+
+                if (vertexExists) {
+                    FXUtility.showAlert("Error", "No se pudo generar un vértice único",
+                            Alert.AlertType.ERROR);
+                    return;
+                }
+                newVertex = newVertexChar;
+
+            } else {
+                // Para lista enlazada, usar nombres de monumentos
+                List<String> monuments = Arrays.asList(
+                        "Eiffel", "Colosseum", "Pyramids", "MachuPicchu", "TajMahal",
+                        "GreatWall", "StatueLiberty", "ChristRedeemer", "Petra", "Acropolis",
+                        "Stonehenge", "ChichenItza", "BigBen", "SagradaFamilia", "Kremlin",
+                        "Louvre", "ForbiddenCity", "SydneyOpera", "GoldenGate", "BurjKhalifa"
+                );
+                String newVertexStr;
+                boolean vertexExists;
+                int attempts = 0;
+                final int MAX_ATTEMPTS = 100;
+
+                do {
+                    newVertexStr = monuments.get(util.Utility.random(monuments.size()));
+                    vertexExists = currentActiveGraph.containsVertex(newVertexStr);
+                    attempts++;
+                } while (vertexExists && attempts < MAX_ATTEMPTS);
+
+                if (vertexExists) {
+                    FXUtility.showAlert("Error", "No se pudo generar un vértice único",
+                            Alert.AlertType.ERROR);
+                    return;
+                }
+                newVertex = newVertexStr;
             }
 
-            currentActiveGraph.addVertex(newVertexValue);
+            currentActiveGraph.addVertex(newVertex);
             drawGraph(currentActiveGraph, pane3);
+            TextResult.setText(currentActiveGraph.toString());
 
         } catch (GraphException | ListException e) {
             FXUtility.showAlert("Error", "Error al añadir vértice: " + e.getMessage(),
@@ -390,12 +443,43 @@ public class OperationsController {
                 return;
             }
 
+            // Obtener todos los vértices disponibles
+            List<Object> vertices = new ArrayList<>();
+            if (currentActiveGraph instanceof DirectedAdjacencyMatrixGraph) {
+                DirectedAdjacencyMatrixGraph amGraph = (DirectedAdjacencyMatrixGraph) currentActiveGraph;
+                for (int i = 0; i < amGraph.size(); i++) {
+                    if (amGraph.getVertexData(i) != null) {
+                        vertices.add(amGraph.getVertexData(i));
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedAdjacencyListGraph) {
+                DirectedAdjacencyListGraph alGraph = (DirectedAdjacencyListGraph) currentActiveGraph;
+                for (int i = 0; i < alGraph.size(); i++) {
+                    if (alGraph.getVertexData(i) != null) {
+                        vertices.add(alGraph.getVertexData(i));
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedSinglyLinkedListGraph) {
+                DirectedSinglyLinkedListGraph sllGraph = (DirectedSinglyLinkedListGraph) currentActiveGraph;
+                SinglyLinkedList vertexList = sllGraph.getVertexList();
+                for (int i = 0; i < vertexList.size(); i++) {
+                    Vertex v = (Vertex) vertexList.getNode(i).data;
+                    vertices.add(v.data);
+                }
+            }
+
+            if (vertices.isEmpty()) {
+                FXUtility.showAlert("Error", "No se encontraron vértices para eliminar",
+                        Alert.AlertType.WARNING);
+                return;
+            }
+
             // Seleccionar un vértice aleatorio para eliminar
-            int randomIndex = new Random().nextInt(currentActiveGraph.size());
-            Object vertexToRemove = currentActiveGraph.getVertexData(randomIndex);
+            Object vertexToRemove = vertices.get(new Random().nextInt(vertices.size()));
 
             currentActiveGraph.removeVertex(vertexToRemove);
             drawGraph(currentActiveGraph, pane3);
+            TextResult.setText(currentActiveGraph.toString());
 
         } catch (GraphException | ListException e) {
             FXUtility.showAlert("Error", "Error al eliminar vértice: " + e.getMessage(),
@@ -435,29 +519,59 @@ public class OperationsController {
         try {
             // Verificar que hay al menos 2 vértices
             if (currentActiveGraph.size() < 2) {
-                FXUtility.showAlert("Error", "Se necesitan al menos 2 vértices para crear una arista", Alert.AlertType.WARNING);
+                FXUtility.showAlert("Error", "Se necesitan al menos 2 vértices para crear una arista",
+                        Alert.AlertType.WARNING);
                 return;
             }
 
-            Random rand = new Random();
+            // Obtener todos los vértices disponibles
+            List<Object> vertices = new ArrayList<>();
+            if (currentActiveGraph instanceof DirectedAdjacencyMatrixGraph) {
+                DirectedAdjacencyMatrixGraph amGraph = (DirectedAdjacencyMatrixGraph) currentActiveGraph;
+                for (int i = 0; i < amGraph.size(); i++) {
+                    if (amGraph.getVertexData(i) != null) {
+                        vertices.add(amGraph.getVertexData(i));
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedAdjacencyListGraph) {
+                DirectedAdjacencyListGraph alGraph = (DirectedAdjacencyListGraph) currentActiveGraph;
+                for (int i = 0; i < alGraph.size(); i++) {
+                    if (alGraph.getVertexData(i) != null) {
+                        vertices.add(alGraph.getVertexData(i));
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedSinglyLinkedListGraph) {
+                DirectedSinglyLinkedListGraph sllGraph = (DirectedSinglyLinkedListGraph) currentActiveGraph;
+                SinglyLinkedList vertexList = sllGraph.getVertexList();
+                for (int i = 0; i < vertexList.size(); i++) {
+                    Vertex v = (Vertex) vertexList.getNode(i).data;
+                    vertices.add(v.data);
+                }
+            }
+
+            if (vertices.size() < 2) {
+                FXUtility.showAlert("Error", "No hay suficientes vértices para crear una arista",
+                        Alert.AlertType.WARNING);
+                return;
+            }
+
             // Seleccionar dos vértices aleatorios distintos
-            int v1Index = rand.nextInt(currentActiveGraph.size());
-            int v2Index;
+            Random rand = new Random();
+            Object vertex1, vertex2;
             do {
-                v2Index = rand.nextInt(currentActiveGraph.size());
-            } while (v1Index == v2Index);
+                vertex1 = vertices.get(rand.nextInt(vertices.size()));
+                vertex2 = vertices.get(rand.nextInt(vertices.size()));
+            } while (vertex1.equals(vertex2));
 
-            Object vertex1 = currentActiveGraph.getVertexData(v1Index);
-            Object vertex2 = currentActiveGraph.getVertexData(v2Index);
-
-//            // Verificar si la arista ya existe
-//            if (currentActiveGraph.containsEdge(vertex1, vertex2)) {
-//                FXUtility.showAlert("Información", "Ya existe una arista entre " + vertex1 + " y " + vertex2, Alert.AlertType.INFORMATION);
-//                return;
-//            }
-
-            // Generar peso aleatorio entre 1 y 50
-            int weight = rand.nextInt(50) + 1;
+            // Generar peso aleatorio según el tipo de grafo
+            int weight;
+            if (currentActiveGraph instanceof DirectedAdjacencyMatrixGraph) {
+                weight = rand.nextInt(50) + 1; // 1-50 para matriz
+            } else if (currentActiveGraph instanceof DirectedAdjacencyListGraph) {
+                weight = rand.nextInt(50) + 51; // 51-100 para lista
+            } else {
+                weight = rand.nextInt(50) + 101; // 101-150 para lista enlazada
+            }
 
             // Añadir la arista con peso
             currentActiveGraph.addEdgeWeight(vertex1, vertex2, weight);
@@ -466,10 +580,9 @@ public class OperationsController {
             drawGraph(currentActiveGraph, pane3);
             TextResult.setText(currentActiveGraph.toString());
 
-//            FXUtility.showAlert("Éxito", "Arista añadida entre " + vertex1 + " y " + vertex2 + " con peso " + weight, Alert.AlertType.INFORMATION);
-
         } catch (Exception e) {
-            FXUtility.showAlert("Error", "Error al añadir arista: " + e.getMessage(), Alert.AlertType.ERROR);
+            FXUtility.showAlert("Error", "Error al añadir arista: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
         }
     }
 
@@ -478,11 +591,44 @@ public class OperationsController {
         try {
             // Obtener todas las aristas existentes
             List<Object[]> existingEdges = new ArrayList<>();
-            for (int i = 0; i < currentActiveGraph.size(); i++) {
-                for (int j = i + 1; j < currentActiveGraph.size(); j++) { // Solo mitad superior para no dirigido
-                    Object v1 = currentActiveGraph.getVertexData(i);
-                    Object v2 = currentActiveGraph.getVertexData(j);
-                    if (currentActiveGraph.containsEdge(v1, v2)) {
+
+            if (currentActiveGraph instanceof DirectedAdjacencyMatrixGraph) {
+                DirectedAdjacencyMatrixGraph amGraph = (DirectedAdjacencyMatrixGraph) currentActiveGraph;
+                for (int i = 0; i < amGraph.size(); i++) {
+                    Object v1 = amGraph.getVertexData(i);
+                    if (v1 == null) continue;
+
+                    for (int j = 0; j < amGraph.size(); j++) {
+                        Object v2 = amGraph.getVertexData(j);
+                        if (v2 != null && amGraph.containsEdge(v1, v2)) {
+                            existingEdges.add(new Object[]{v1, v2});
+                        }
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedAdjacencyListGraph) {
+                DirectedAdjacencyListGraph alGraph = (DirectedAdjacencyListGraph) currentActiveGraph;
+                for (int i = 0; i < alGraph.size(); i++) {
+                    Vertex v = alGraph.getVertexObject(i);
+                    if (v == null) continue;
+
+                    Object v1 = v.data;
+                    SinglyLinkedList edges = v.edgesList;
+                    for (int j = 0; j < edges.size(); j++) {
+                        EdgeWeight ew = (EdgeWeight) edges.get(j);
+                        Object v2 = ew.getEdge();
+                        existingEdges.add(new Object[]{v1, v2});
+                    }
+                }
+            } else if (currentActiveGraph instanceof DirectedSinglyLinkedListGraph) {
+                DirectedSinglyLinkedListGraph sllGraph = (DirectedSinglyLinkedListGraph) currentActiveGraph;
+                SinglyLinkedList vertexList = sllGraph.getVertexList();
+                for (int i = 0; i < vertexList.size(); i++) {
+                    Vertex v = (Vertex) vertexList.getNode(i).data;
+                    Object v1 = v.data;
+                    SinglyLinkedList edges = v.edgesList;
+                    for (int j = 0; j < edges.size(); j++) {
+                        EdgeWeight ew = (EdgeWeight) edges.get(j);
+                        Object v2 = ew.getEdge();
                         existingEdges.add(new Object[]{v1, v2});
                     }
                 }
@@ -490,13 +636,13 @@ public class OperationsController {
 
             // Verificar si hay aristas
             if (existingEdges.isEmpty()) {
-                FXUtility.showAlert("Información", "El grafo no contiene aristas para eliminar", Alert.AlertType.INFORMATION);
+                FXUtility.showAlert("Información", "El grafo no contiene aristas para eliminar",
+                        Alert.AlertType.INFORMATION);
                 return;
             }
 
             // Seleccionar una arista aleatoria para eliminar
-            Random rand = new Random();
-            Object[] edgeToRemove = existingEdges.get(rand.nextInt(existingEdges.size()));
+            Object[] edgeToRemove = existingEdges.get(new Random().nextInt(existingEdges.size()));
             Object vertex1 = edgeToRemove[0];
             Object vertex2 = edgeToRemove[1];
 
@@ -507,10 +653,9 @@ public class OperationsController {
             drawGraph(currentActiveGraph, pane3);
             TextResult.setText(currentActiveGraph.toString());
 
-//            FXUtility.showAlert("Éxito", "Arista eliminada entre " + vertex1 + " y " + vertex2, Alert.AlertType.INFORMATION);
-
         } catch (Exception e) {
-            FXUtility.showAlert("Error", "Error al eliminar arista: " + e.getMessage(), Alert.AlertType.ERROR);
+            FXUtility.showAlert("Error", "Error al eliminar arista: " + e.getMessage(),
+                    Alert.AlertType.ERROR);
         }
     }
 
